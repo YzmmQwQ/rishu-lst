@@ -66,15 +66,15 @@
 ### Prerequisites
 
 - Node.js >= 22
-- pnpm >= 10
+- npm >= 10
 
 ### Install & Develop
 
 ```bash
 git clone https://github.com/Yueby/music-together.git
 cd music-together
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Frontend: http://localhost:5173 | Backend: http://localhost:3001

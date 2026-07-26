@@ -66,15 +66,15 @@
 ### 环境要求
 
 - Node.js >= 22
-- pnpm >= 10
+- npm >= 10
 
 ### 安装与开发
 
 ```bash
 git clone https://github.com/Yueby/music-together.git
 cd music-together
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 前端: http://localhost:5173 | 后端: http://localhost:3001

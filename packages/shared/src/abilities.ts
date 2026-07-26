@@ -1,4 +1,5 @@
-import { PureAbility, AbilityBuilder } from '@casl/ability'
+import { AbilityBuilder, createMongoAbility } from '@casl/ability'
+import type { MongoAbility } from '@casl/ability'
 import type { UserRole } from './types.js'
 
 export type Actions =
@@ -17,7 +18,7 @@ export type Actions =
 
 export type Subjects = 'Player' | 'Queue' | 'Room' | 'all'
 
-export type AppAbility = PureAbility<[Actions, Subjects]>
+export type AppAbility = MongoAbility<[Actions, Subjects]>
 
 /**
  * Define CASL abilities for a given user role.
@@ -27,7 +28,7 @@ export type AppAbility = PureAbility<[Actions, Subjects]>
  * - Member: 仅添加歌曲 + 发起投票
  */
 export function defineAbilityFor(role: UserRole): AppAbility {
-  const { can, build } = new AbilityBuilder<AppAbility>(PureAbility)
+  const { can, build } = new AbilityBuilder<AppAbility>(createMongoAbility)
 
   switch (role) {
     case 'owner':

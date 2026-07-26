@@ -4,19 +4,19 @@
 
 ```bash
 # 安装依赖
-pnpm install
+npm install
 
 # 启动前后端开发服务器（默认同时开放到局域网）
-pnpm dev
+npm run dev
 
 # 其他设备通过 http://你的局域网IP:5173 访问前端
 # 前端会自动连接到 http://你的局域网IP:3001 后端
 
 # 仅启动前端
-pnpm dev:client
+npm run dev:client
 
 # 仅启动后端
-pnpm dev:server
+npm run dev:server
 ```
 
 ## 端口
@@ -46,7 +46,7 @@ pnpm dev:server
 
 ```bash
 # 构建所有包
-pnpm build
+npm run build
 
 # 前端产物 → packages/client/dist/
 # 后端产物 → packages/server/dist/
@@ -71,4 +71,4 @@ npx shadcn@latest add <component-name>
 - Auth Cookie 持久化策略：**只有用户主动登出（`useAuth.logout()`）才删除 localStorage 中的 cookie**。`useAuthSync` 在收到 `AUTH_SET_COOKIE_RESULT` 失败时（无论 `reason` 是 `expired` 还是 `error`）仅通过 toast 反馈，永远不删除 cookie，确保下次进房间时自动重试。`LoginSection` 在 localStorage 有 cookie 但服务端未确认时显示 "验证登录中…" 乐观状态
 - Auth Cookie 自动重发：`useRoomState` 在收到 `ROOM_STATE` 时自动重发 localStorage 中的 cookie。另外，当从 HomePage 导航到 RoomPage 时（`ROOM_STATE` 已被 HomePage 提前消费），`useRoomState` 挂载时检测到 room 已存在会立即补发 cookie，确保任何入口都能恢复认证
 - Auth Cookie 服务端验证双路径：`authController` 收到 `AUTH_SET_COOKIE` 时先检查 `hasCookie()`——如果 cookie 已在内存池中（刷新页面场景），走 **fast path** 跳过 API 调用直接返回成功；否则走 **slow path** 调用 `getUserInfo()` → `ncmApi.login_status()`。slow path 对**任何失败原因**（`expired` 或 `error`）都自动重试 1 次（间隔 1.5 秒），因为网易云 `login_status` API 可能对有效 cookie 临时返回空 profile
-- `shared` 包修改后前后端会自动热重载（pnpm workspace 链接）
+- `shared` 包修改后前后端会自动热重载（npm workspace 链接）

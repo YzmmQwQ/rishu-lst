@@ -20,9 +20,9 @@ Docker 容器 (:3001)
 
 ## Docker 多阶段构建
 
-- **阶段 1（deps）**：`pnpm install --frozen-lockfile` 安装全部依赖
+- **阶段 1（deps）**：`npm ci` 安装全部依赖
 - **阶段 2（build）**：分别构建 shared、server（tsc）、client（vite build）
-- **阶段 3（production）**：仅安装 server 生产依赖（`--filter @music-together/server...`），复制构建产物
+- **阶段 3（production）**：仅安装生产依赖（`npm ci --omit=dev`），复制构建产物
 
 ## CORS 策略
 

@@ -9,9 +9,8 @@ music-together/
 │   ├── server/          # Node.js 后端
 │   └── shared/          # 共享类型与常量
 ├── docs/                # 项目文档（含本文件 PROJECT_ARCHITECTURE.md）
-├── package.json         # 根 package（工作区编排）
-├── pnpm-workspace.yaml  # pnpm 工作区定义
-├── pnpm-lock.yaml
+├── package.json         # 根 package（npm workspaces 编排）
+├── package-lock.json
 ├── README.md
 └── .gitignore
 ```

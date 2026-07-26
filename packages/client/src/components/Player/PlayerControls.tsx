@@ -103,7 +103,11 @@ export const PlayerControls = memo(function PlayerControls({
   const handlePlayPause = () => {
     if (playCooldown) return
     if (canPlay) {
-      isPlaying ? onPause() : onPlay()
+      if (isPlaying) {
+        onPause()
+      } else {
+        onPlay()
+      }
     } else if (canVote) {
       onStartVote(isPlaying ? 'pause' : 'resume')
     }

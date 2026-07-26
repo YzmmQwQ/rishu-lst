@@ -75,7 +75,8 @@ if (fs.existsSync(indexHtml)) {
     }),
   )
   // SPA fallback: 所有非 API 的 GET -> index.html
-  app.get('*', (_req, res) => {
+  // Express 5 要求通配参数具名（'*splat'），路径通过 _req.params.splat 获取
+  app.get('*splat', (_req, res) => {
     res.setHeader('Cache-Control', 'no-cache, must-revalidate')
     res.sendFile(indexHtml)
   })

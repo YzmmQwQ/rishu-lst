@@ -6,11 +6,11 @@ trigger: always_on
 
 **严格禁止**自行执行以下命令（包括但不限于）：
 
-- `pnpm dev` / `pnpm run dev`
-- `pnpm build` / `pnpm run build`
-- `pnpm start` / `pnpm run start`
-- `pnpm preview` / `pnpm run preview`
-- 以及任何等效的 `npm run …` / `yarn …` 变体
+- `npm run dev` / `npm dev`
+- `npm run build` / `npm run build --workspaces`
+- `npm start` / `npm run start`
+- `npm run preview` / `npm run preview -w packages/client`
+- 以及任何等效的 `yarn …` 变体
 
 ## 正确做法
 
@@ -18,17 +18,17 @@ trigger: always_on
 
 ```
 // ✅ 正确 — 提示用户执行
-"请在终端中运行 `pnpm dev` 启动开发服务器。"
+"请在终端中运行 `npm run dev` 启动开发服务器。"
 
 // ❌ 错误 — 自行执行
-Shell: pnpm dev
+Shell: npm run dev
 ```
 
 ## 允许的操作
 
 以下命令**可以**正常执行，不受此规则限制：
 
-- `pnpm install` / `pnpm add <pkg>` — 安装依赖
-- `pnpm exec …` — 执行工具命令（如 `pnpm exec prisma migrate`）
-- `pnpm run lint` / `pnpm run typecheck` — 代码检查
+- `npm install` / `npm install <pkg>` — 安装依赖
+- `npx …` — 执行工具命令（如 `npx prisma migrate`）
+- `npm run lint` / `npm run typecheck` — 代码检查
 - `npx shadcn@latest add …` — 添加 shadcn 组件

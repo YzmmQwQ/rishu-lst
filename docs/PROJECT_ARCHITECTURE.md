@@ -24,7 +24,7 @@
 
 - **前端**: React 19 + Vite 7 + TypeScript 5.9 + Tailwind CSS v4 + shadcn/ui + Zustand
 - **后端**: Node.js + Express 4 + Socket.IO 4 + @meting/core
-- **Monorepo**: pnpm workspaces（3 个包：`client`、`server`、`shared`）
+- **Monorepo**: npm workspaces（3 个包：`client`、`server`、`shared`）
 
 ---
 

@@ -25,20 +25,25 @@ export default defineConfig({
     target: 'esnext', // 原生支持 top-level await，避免 vite-plugin-top-level-await 与 manualChunks 冲突
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-socket': ['socket.io-client'],
-          'vendor-motion': ['motion'],
-          'vendor-ui': ['radix-ui', 'sonner', 'vaul', 'class-variance-authority'],
-          'vendor-pixi': [
-            '@pixi/app',
-            '@pixi/core',
-            '@pixi/display',
-            '@pixi/sprite',
-            '@pixi/filter-blur',
-            '@pixi/filter-bulge-pinch',
-            '@pixi/filter-color-matrix',
-          ],
+        // Vite 8 / Rollup 4：manualChunks 使用函数形式（类型安全，等价于原对象映射）
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react-router')) return 'vendor-react'
+            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('scheduler/')) {
+              return 'vendor-react'
+            }
+            if (id.includes('socket.io-client')) return 'vendor-socket'
+            if (id.includes('/motion/')) return 'vendor-motion'
+            if (
+              id.includes('/radix-ui/') ||
+              id.includes('/sonner/') ||
+              id.includes('/vaul/') ||
+              id.includes('/class-variance-authority/')
+            ) {
+              return 'vendor-ui'
+            }
+            if (id.includes('/@pixi/')) return 'vendor-pixi'
+          }
         },
       },
     },
