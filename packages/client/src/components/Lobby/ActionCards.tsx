@@ -26,11 +26,11 @@ export function ActionCards({
       className="mb-10 grid gap-4 sm:grid-cols-2"
     >
       {/* Create room card */}
-      <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-5">
+      <div className="flex flex-col justify-between border border-border bg-card p-5">
         <div className="mb-4">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <Home className="h-4 w-4 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center border border-border">
+              <Home className="h-5 w-5 text-foreground" />
             </div>
             <h2 className="text-base font-semibold text-foreground">创建房间</h2>
           </div>
@@ -43,11 +43,11 @@ export function ActionCards({
       </div>
 
       {/* Join room card */}
-      <div className="flex flex-col justify-between rounded-xl border border-border bg-card p-5">
+      <div className="flex flex-col justify-between border border-border bg-card p-5">
         <div className="mb-4">
           <div className="mb-2 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-              <LogIn className="h-4 w-4 text-primary" />
+            <div className="flex h-10 w-10 items-center justify-center border border-border">
+              <LogIn className="h-5 w-5 text-foreground" />
             </div>
             <h2 className="text-base font-semibold text-foreground">加入房间</h2>
           </div>

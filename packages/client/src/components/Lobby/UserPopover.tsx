@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { CircleUser } from 'lucide-react'
 import { LIMITS } from '@music-together/shared'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -46,9 +45,9 @@ export function UserPopover() {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border border-border/60">
-          {initial ? <span className="text-sm font-semibold">{initial}</span> : <CircleUser className="h-5 w-5" />}
-        </Button>
+        <button type="button" className="nav-icon-btn" aria-label="个人设置">
+          {initial ? <span className="text-xs font-semibold">{initial}</span> : <CircleUser />}
+        </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64">
         <div className="space-y-3">

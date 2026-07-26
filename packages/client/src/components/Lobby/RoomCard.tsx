@@ -17,13 +17,11 @@ export const RoomCard = memo(function RoomCard({ room, index, onClick }: RoomCar
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
-      whileHover={{ y: -4, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        'group relative flex w-full flex-col gap-3 overflow-hidden rounded-xl p-5 text-left',
-        'border border-border bg-card transition-all duration-300',
-        'hover:shadow-md hover:border-primary/20',
+        'group relative flex w-full flex-col gap-3 overflow-hidden p-5 text-left',
+        'border border-border bg-card',
+        'e2b-card-hover',
       )}
     >
       {/* Room name row */}

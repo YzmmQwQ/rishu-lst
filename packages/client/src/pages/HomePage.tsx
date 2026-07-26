@@ -13,9 +13,9 @@ import { storage } from '@/lib/storage'
 import { useSocketContext } from '@/providers/SocketProvider'
 import { useRoomStore } from '@/stores/roomStore'
 import { useChatStore } from '@/stores/chatStore'
-import { useVersionCheck } from '@/hooks/useVersionCheck'
+import { useTheme } from '@/hooks/useTheme'
 import { EVENTS, ERROR_CODE, type RoomListItem, type RoomState } from '@music-together/shared'
-import { Code, Headphones } from 'lucide-react'
+import { Code } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -25,7 +25,7 @@ export default function HomePage() {
   const navigate = useNavigate()
   const { socket } = useSocketContext()
   const { rooms, isLoading, createRoom, joinRoom } = useLobby()
-  const hasUpdate = useVersionCheck()
+  const { isDark, toggleTheme } = useTheme()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [passwordDialog, setPasswordDialog] = useState<{ open: boolean; room: RoomListItem | null }>({
@@ -235,22 +235,46 @@ export default function HomePage() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="flex min-h-screen flex-col bg-background"
+      className="relative z-10 flex min-h-screen flex-col"
     >
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <Headphones className="h-5 w-5 text-primary" />
-            <span className="text-base font-semibold tracking-tight text-foreground">Music Together</span>
-          </div>
+      {/* Top Bar — 照搬 lst 的 .top-bar（fixed 全宽贴顶） */}
+      <nav className="top-bar">
+        <button type="button" className="site-title" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          LST.RISHU.CFD
+        </button>
+        <div className="nav-right">
           <UserPopover />
+          <button
+            type="button"
+            className="theme-toggle"
+            aria-label="Toggle theme"
+            onClick={toggleTheme}
+          >
+            {isDark ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            )}
+            <span id="themeText">{isDark ? 'LIGHT' : 'DARK'}</span>
+          </button>
         </div>
-      </header>
+      </nav>
 
       {/* Main */}
-      <main className="flex-1">
-        <div className="mx-auto max-w-5xl px-4 py-8">
+      <main className="flex-1 has-top-bar">
+        <div className="mx-auto max-w-5xl px-6 py-8">
           <HeroSection />
 
           <ActionCards
@@ -267,37 +291,23 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-4">
-          <span className="text-xs text-muted-foreground">
-            Music Together · Made by Yueby ·{' '}
-            <a
-              href="https://github.com/Yueby/music-together/blob/main/package.json"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative inline-flex items-center transition-colors hover:text-foreground"
-            >
-              v{__APP_VERSION__}
-              {hasUpdate && (
-                <span
-                  className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500"
-                  title="有新版本可用，刷新页面以更新"
-                />
-              )}
-            </a>
+      {/* Footer — 强制底部（main flex-1 撑满，footer 在视口底） */}
+      <div className="mx-auto w-full max-w-5xl px-6 pb-6">
+        <div className="footer">
+          <span className="footer-credit">
+            Made by <a href="https://yz-mm.top" target="_blank" rel="noopener noreferrer" className="footer-link">YZMM</a>
           </span>
           <a
-            href="https://github.com/Yueby/music-together"
+            href="https://github.com/YzmmQwQ/Rishu-lst"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="footer-link inline-flex items-center gap-1.5"
           >
             <Code className="h-3.5 w-3.5" />
             GitHub
           </a>
         </div>
-      </footer>
+      </div>
 
       {/* Dialogs */}
       <CreateRoomDialog
