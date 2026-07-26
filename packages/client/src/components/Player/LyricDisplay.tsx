@@ -134,6 +134,7 @@ export function LyricDisplay() {
       className="amll-container h-full w-full"
       style={
         {
+          fontFamily: 'var(--font-apple)',
           fontWeight,
           '--amll-lp-font-size': `clamp(16px, calc(min(5vh, 7vw) * ${fontSize / 100}), 80px)`,
           '--amll-translated-font-size': `${translationFontSize / 100}em`,

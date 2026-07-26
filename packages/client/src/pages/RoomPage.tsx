@@ -44,6 +44,12 @@ export default function RoomPage() {
   const navigate = useNavigate()
   const { socket, isConnected } = useSocketContext()
   const { leaveRoom, updateSettings, setUserRole } = useRoom()
+
+  // 房间内页隐藏 E2B 装饰性滚动条（顶部进度条 + 右侧指示器）
+  useEffect(() => {
+    document.body.classList.add('in-room')
+    return () => document.body.classList.remove('in-room')
+  }, [])
   const { play, pause, seek, next, prev } = usePlayer()
   const { addTrack, insertAfterCurrent, removeTrack, reorderTracks, clearQueue } = useQueue()
 
@@ -306,7 +312,7 @@ export default function RoomPage() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex h-dvh flex-col bg-background">
+        <div className="relative z-10 flex h-dvh flex-col bg-background">
           <RoomHeader
             onOpenSearch={() => setSearchOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}

@@ -1,12 +1,13 @@
-import { Button } from '@/components/ui/button'
+import { MediaButton } from '@/components/ui/media-button'
+import { ChatIcon, SpeakerIcon, SpeakerMutedIcon } from '@/components/player-icons/icons'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { MarqueeText } from '@/components/ui/marquee-text'
 import { usePlayerStore } from '@/stores/playerStore'
-import { MessageSquare, Volume2, VolumeX } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { motion } from 'motion/react'
-import { memo, useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { LAYOUT_TRANSITION, SPRING } from './constants'
 
 /** Must match PlayerControls.DESIGN_WIDTH so zoom factors are identical */
@@ -26,29 +27,49 @@ function VolumeControl({
   toggleMute: () => void
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
+  // 点击 mute 时触发喇叭声波动画（一次性）
+  const [animate, setAnimate] = useState(false)
+  const animateTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleMuteClick = () => {
+    setAnimate(true)
+    if (animateTimer.current) clearTimeout(animateTimer.current)
+    animateTimer.current = setTimeout(() => setAnimate(false), 700)
+    toggleMute()
+  }
+
+  useEffect(() => () => { if (animateTimer.current) clearTimeout(animateTimer.current) }, [])
 
   return (
     <Tooltip delayDuration={300} open={popoverOpen ? false : undefined}>
       <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 text-white/70 hover:bg-white/10 active:scale-90 transition-transform"
+            <MediaButton
               aria-label={volume === 0 ? '取消静音' : '调节音量'}
+              className="h-7 w-7"
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              {volume === 0 ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />}
-            </Button>
+              {volume === 0 ? <SpeakerMutedIcon className="size-7" /> : <SpeakerIcon className="size-7" />}
+            </MediaButton>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent>音量</TooltipContent>
-        <PopoverContent side="top" align="center" className="flex w-44 items-center gap-2 rounded-xl px-3 py-2">
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-white/70" onClick={toggleMute}>
-            {volume === 0 ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
-          </Button>
+        <PopoverContent side="top" align="center" className="slider-on-surface flex w-60 items-center gap-3 px-4 py-3">
+          <button
+            type="button"
+            onClick={handleMuteClick}
+            aria-label="静音切换"
+            className="media-ghost flex h-10 w-10 shrink-0 items-center justify-center text-muted-foreground"
+          >
+            {volume === 0 ? (
+              <SpeakerMutedIcon className="size-7" />
+            ) : (
+              <SpeakerIcon className={cn('size-7', animate && 'speaker-animate')} />
+            )}
+          </button>
           <Slider min={0} max={100} value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} />
-          <span className="w-8 shrink-0 text-right text-xs tabular-nums text-white/50">
+          <span className="w-10 shrink-0 text-right text-sm tabular-nums text-muted-foreground">
             {Math.round(volume * 100)}
           </span>
         </PopoverContent>
@@ -97,7 +118,7 @@ export const SongInfoBar = memo(function SongInfoBar({ onOpenChat, chatUnreadCou
     <div ref={wrapperRef} className="w-full">
       <div ref={innerRef} className="flex w-full items-end gap-2" style={{ width: DESIGN_WIDTH }}>
         {/* Left: song title + artist — layoutId pairs with NowPlaying compact for shared animation */}
-        <motion.div layoutId="song-info" transition={LAYOUT_TRANSITION} className="min-w-0 flex-1">
+        <motion.div layoutId="song-info" transition={LAYOUT_TRANSITION} className="min-w-0 flex-1" style={{ fontFamily: 'var(--font-apple)' }}>
           <motion.div
             initial={{ fontSize: 18 }}
             animate={{ fontSize: 20 }}
@@ -121,22 +142,19 @@ export const SongInfoBar = memo(function SongInfoBar({ onOpenChat, chatUnreadCou
           <VolumeControl volume={volume} setVolume={setVolume} toggleMute={toggleMute} />
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
-              <motion.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-9 w-9 text-white/70 hover:bg-white/10"
-                  onClick={onOpenChat}
-                  aria-label="聊天"
-                >
-                  <MessageSquare className="size-5" />
-                  {chatUnreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/90 px-1 text-[10px] font-semibold leading-none text-black">
-                      {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
-                    </span>
-                  )}
-                </Button>
-              </motion.div>
+              <MediaButton
+                onClick={onOpenChat}
+                aria-label="聊天"
+                className="relative h-6 w-6"
+                style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+              >
+                <ChatIcon className="size-5" />
+                {chatUnreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/90 px-1 text-[10px] font-semibold leading-none text-black">
+                    {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+                  </span>
+                )}
+              </MediaButton>
             </TooltipTrigger>
             <TooltipContent>聊天</TooltipContent>
           </Tooltip>

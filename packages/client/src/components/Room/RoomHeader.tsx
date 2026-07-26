@@ -1,4 +1,4 @@
-import { Copy, Ellipsis, LogOut, Search, Settings, Users, Wifi, WifiOff } from 'lucide-react'
+import { Copy, Ellipsis, LogOut, Moon, Search, Settings, Sun, Users, Wifi, WifiOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { getMedianRTT } from '@/lib/clockSync'
+import { useTheme } from '@/hooks/useTheme'
 import { useRoomStore } from '@/stores/roomStore'
 import { useSocketContext } from '@/providers/SocketProvider'
 import { toast } from 'sonner'
@@ -27,6 +28,7 @@ export function RoomHeader({ onOpenSearch, onOpenSettings, onOpenMembers, onLeav
   const roomId = useRoomStore((s) => s.room?.id)
   const userCount = useRoomStore((s) => s.room?.users.length ?? 0)
   const { isConnected } = useSocketContext()
+  const { isDark, toggleTheme } = useTheme()
 
   // Poll RTT from clockSync module every 3s
   const [rtt, setRtt] = useState(0)
@@ -122,6 +124,21 @@ export function RoomHeader({ onOpenSearch, onOpenSettings, onOpenMembers, onLeav
       </div>
 
       <div className="flex items-center gap-0.5 sm:gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0"
+              onClick={toggleTheme}
+              aria-label={isDark ? '切换浅色' : '切换深色'}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{isDark ? '浅色模式' : '深色模式'}</TooltipContent>
+        </Tooltip>
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

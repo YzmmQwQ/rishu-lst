@@ -123,6 +123,14 @@ export function AudioPlayer({
         </div>
       )}
 
+      {/* 无封面（未选歌）时的背景，取色与封面占位方块一致（纯黑） */}
+      {!proxiedCover && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 bg-[#222222]"
+        />
+      )}
+
       {/* Content with padding */}
       <div className="relative z-10 h-full p-5 md:p-[5%] lg:p-[5%]">
         <div
@@ -153,7 +161,7 @@ export function AudioPlayer({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 20 }}
                       transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="min-h-0 w-full flex-1 overflow-hidden"
+                      className="lyric-panel min-h-0 w-full flex-1 overflow-hidden"
                       style={LYRIC_MASK_STYLE}
                     >
                       <LyricDisplay />
@@ -209,7 +217,7 @@ export function AudioPlayer({
                   </div>
                 )}
               </div>
-              <div className="min-h-0 w-[60%] overflow-hidden" style={LYRIC_MASK_STYLE}>
+              <div className="lyric-panel min-h-0 w-[60%] overflow-hidden" style={LYRIC_MASK_STYLE}>
                 <LyricDisplay />
               </div>
             </>

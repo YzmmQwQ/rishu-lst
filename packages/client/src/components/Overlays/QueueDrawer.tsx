@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { MediaButton } from '@/components/ui/media-button'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -13,7 +14,8 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import { useCallback, useContext, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { AbilityContext } from '@/providers/AbilityProvider'
-import { ArrowUpToLine, ChevronDown, ChevronUp, ListX, Music, Play, Trash2, User, X } from 'lucide-react'
+import { ArrowUpToLine, ChevronDown, ChevronUp, ListX, Music, Trash2, User, X } from 'lucide-react'
+import { PlayIcon } from '@/components/player-icons/icons'
 import { toast } from 'sonner'
 import { MarqueeText } from '@/components/ui/marquee-text'
 import type { MusicSource } from '@music-together/shared'
@@ -167,8 +169,8 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction={isMobile ? 'bottom' : 'right'}>
-      <DrawerContent className={cn('flex flex-col p-0', isMobile && 'h-[70vh]')}>
-        <DrawerHeader className="shrink-0 border-b px-4 py-3">
+      <DrawerContent className={cn('flex flex-col p-0 backdrop-blur-xl', isMobile ? 'h-[70vh] bg-background/80' : 'bg-background/70')}>
+        <DrawerHeader className="shrink-0 border-b border-border/50 px-4 py-3">
           <div className="flex items-center justify-between">
             <DrawerTitle className="flex items-center gap-2 text-base">
               <Music className="h-4 w-4" />
@@ -181,11 +183,11 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={cn('h-7 w-7', confirmClear && 'text-destructive hover:text-destructive')}
+                      className={cn('h-8 w-8', confirmClear && 'text-destructive hover:text-destructive')}
                       onClick={handleClear}
                       aria-label="清空播放列表"
                     >
-                      <ListX className="h-4 w-4" />
+                      <ListX className="h-5 w-5" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>{confirmClear ? '再次点击确认清空' : '清空播放列表'}</TooltipContent>
@@ -195,11 +197,11 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7"
+                  className="is-square h-8 w-8"
                   onClick={() => onOpenChange(false)}
                   aria-label="关闭播放列表"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               )}
             </div>
@@ -230,8 +232,7 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                   >
                     <div
                       className={cn(
-                        'group relative flex h-full items-center gap-2 rounded-lg px-2 transition-colors hover:bg-accent/50',
-                        currentTrack?.id === track.id && 'bg-primary/10',
+                        'group relative flex h-full items-center gap-2 px-2 transition-colors hover:bg-accent',
                       )}
                     onClick={() => {
                       if (isTouch) {
@@ -242,8 +243,14 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                       if (!isTouch && dismissedHoverTrackId === track.id) setDismissedHoverTrackId(null)
                     }}
                   >
-                    {/* Index */}
-                    <span className="w-5 shrink-0 text-center text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+                    {/* Index / Now-playing indicator */}
+                    <span className="flex w-5 shrink-0 items-center justify-center text-xs tabular-nums text-muted-foreground">
+                      {currentTrack?.id === track.id ? (
+                        <PlayIcon className="h-4 w-4 text-foreground" />
+                      ) : (
+                        i + 1
+                      )}
+                    </span>
 
                     {/* Cover + source badge */}
                     <div className="relative shrink-0">
@@ -281,11 +288,14 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                     {/* Track info */}
                     <div className="min-w-0 flex-1">
                       <MarqueeText
-                        className={cn('text-sm', currentTrack?.id === track.id && 'font-medium text-primary')}
+                        className={cn(
+                          'text-sm',
+                          currentTrack?.id === track.id ? 'font-medium text-foreground' : 'text-foreground/90',
+                        )}
                       >
                         {track.title}
                       </MarqueeText>
-                      <MarqueeText className="text-xs text-muted-foreground">{track.artist.join(' / ')}</MarqueeText>
+                      <MarqueeText className="text-xs text-foreground/50">{track.artist.join(' / ')}</MarqueeText>
                     </div>
 
                     {/* Requester badge — absolute top-right inside item */}
@@ -303,7 +313,7 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                     <div
                       className={cn(
                         'absolute right-1 top-1/2 z-20 flex -translate-y-1/2 items-center gap-0.5',
-                        'rounded-md border border-border/50 bg-popover px-1 py-0.5 shadow-md backdrop-blur-md',
+                        'rounded-lg bg-black/30 px-0.5 py-0.5 backdrop-blur-md',
                         'opacity-0 pointer-events-none transition-opacity',
                         'group-hover:opacity-100 group-hover:pointer-events-auto',
                         'group-focus-within:opacity-100 group-focus-within:pointer-events-auto',
@@ -316,15 +326,13 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                       {currentTrack?.id !== track.id && (canPlay || canVote) && (
                         <Tooltip delayDuration={400}>
                           <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
+                            <MediaButton
+                              className="is-square h-8 w-8"
                               onClick={() => handlePlayTrack(track)}
                               aria-label={canPlay ? `播放 ${track.title}` : `投票播放 ${track.title}`}
                             >
-                              <Play className="h-3 w-3" />
-                            </Button>
+                              <PlayIcon className="h-4 w-4" />
+                            </MediaButton>
                           </TooltipTrigger>
                           <TooltipContent side="bottom">{canPlay ? '播放' : '投票播放'}</TooltipContent>
                         </Tooltip>
@@ -334,47 +342,41 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                         <>
                           <Tooltip delayDuration={400}>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
+                              <MediaButton
+                                className="is-square h-8 w-8"
                                 disabled={i === 0}
                                 onClick={() => handleMoveUp(i)}
                                 aria-label={`上移 ${track.title}`}
                               >
-                                <ChevronUp className="h-3 w-3" />
-                              </Button>
+                                <ChevronUp className="h-5 w-5" />
+                              </MediaButton>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">上移</TooltipContent>
                           </Tooltip>
 
                           <Tooltip delayDuration={400}>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
+                              <MediaButton
+                                className="is-square h-8 w-8"
                                 disabled={i === queue.length - 1}
                                 onClick={() => handleMoveDown(i)}
                                 aria-label={`下移 ${track.title}`}
                               >
-                                <ChevronDown className="h-3 w-3" />
-                              </Button>
+                                <ChevronDown className="h-5 w-5" />
+                              </MediaButton>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">下移</TooltipContent>
                           </Tooltip>
 
                           <Tooltip delayDuration={400}>
                             <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 min-h-9 min-w-9 sm:min-h-0 sm:min-w-0"
+                              <MediaButton
+                                className="is-square h-8 w-8"
                                 onClick={(e) => handleInsertAfterCurrent(track, e)}
                                 aria-label={`置顶 ${track.title}`}
                               >
-                                <ArrowUpToLine className="h-3 w-3" />
-                              </Button>
+                                <ArrowUpToLine className="h-5 w-5" />
+                              </MediaButton>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">置顶到当前播放下方</TooltipContent>
                           </Tooltip>
@@ -384,15 +386,13 @@ export function QueueDrawer({ open, onOpenChange, onRemoveFromQueue, onReorderQu
                       {(canRemove || canVote) && (
                         <Tooltip delayDuration={400}>
                           <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 min-h-9 min-w-9 sm:min-h-0 sm:min-w-0 text-destructive hover:text-destructive"
+                            <MediaButton
+                              className="is-square h-8 w-8 text-red-500"
                               onClick={() => handleRemoveTrack(track)}
                               aria-label={canRemove ? `移除 ${track.title}` : `投票移除 ${track.title}`}
                             >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                              <Trash2 className="h-5 w-5" />
+                            </MediaButton>
                           </TooltipTrigger>
                           <TooltipContent side="bottom">{canRemove ? '移除' : '投票移除'}</TooltipContent>
                         </Tooltip>

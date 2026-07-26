@@ -1,6 +1,7 @@
-import { Button } from '@/components/ui/button'
+import { MediaButton } from '@/components/ui/media-button'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { ForwardIcon, PauseIcon, PlayIcon, PlaylistIcon, RepeatIcon, RewindIcon, ShuffleIcon } from '@/components/player-icons/icons'
 import { formatTime } from '@/lib/format'
 import { AbilityContext } from '@/providers/AbilityProvider'
 import { useSocketContext } from '@/providers/SocketProvider'
@@ -8,8 +9,6 @@ import { usePlayerStore } from '@/stores/playerStore'
 import { useRoomStore } from '@/stores/roomStore'
 import type { PlayMode, VoteAction } from '@music-together/shared'
 import { EVENTS, TIMING } from '@music-together/shared'
-import { ArrowRightToLine, ListMusic, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
 import { memo, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 /** Design-time width (px) at which the controls are laid out — CSS zoom scales from this baseline */
@@ -17,11 +16,11 @@ const DESIGN_WIDTH = 300
 
 const PLAY_MODE_CYCLE: PlayMode[] = ['sequential', 'loop-all', 'loop-one', 'shuffle']
 
-const PLAY_MODE_CONFIG: Record<PlayMode, { icon: typeof Repeat; label: string }> = {
-  sequential: { icon: ArrowRightToLine, label: '顺序播放' },
-  'loop-all': { icon: Repeat, label: '列表循环' },
-  'loop-one': { icon: Repeat1, label: '单曲循环' },
-  shuffle: { icon: Shuffle, label: '随机播放' },
+const PLAY_MODE_CONFIG: Record<PlayMode, { label: string }> = {
+  sequential: { label: '顺序播放' },
+  'loop-all': { label: '列表循环' },
+  'loop-one': { label: '单曲循环' },
+  shuffle: { label: '随机播放' },
 }
 
 interface PlayerControlsProps {
@@ -127,7 +126,6 @@ export const PlayerControls = memo(function PlayerControls({
   }
 
   const modeConfig = PLAY_MODE_CONFIG[playMode]
-  const ModeIcon = modeConfig.icon
 
   return (
     <div ref={wrapperRef} className="w-full">
@@ -165,28 +163,14 @@ export const PlayerControls = memo(function PlayerControls({
           <div className="flex flex-1 items-center justify-start">
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <motion.div whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-white/70 hover:bg-white/10"
-                    onClick={handlePlayModeToggle}
-                    disabled={!canSetMode && !canVote}
-                    aria-label={modeConfig.label}
-                  >
-                    <AnimatePresence mode="wait" initial={false}>
-                      <motion.div
-                        key={playMode}
-                        initial={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.6, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                      >
-                        <ModeIcon className="size-5" />
-                      </motion.div>
-                    </AnimatePresence>
-                  </Button>
-                </motion.div>
+                <MediaButton
+                  onClick={handlePlayModeToggle}
+                  disabled={!canSetMode && !canVote}
+                  aria-label={modeConfig.label}
+                  className="h-10 w-10"
+                >
+                  {playMode === 'shuffle' ? <ShuffleIcon className="h-7 w-7" /> : <RepeatIcon className="h-7 w-7" />}
+                </MediaButton>
               </TooltipTrigger>
               <TooltipContent>{modeConfig.label}</TooltipContent>
             </Tooltip>
@@ -196,58 +180,46 @@ export const PlayerControls = memo(function PlayerControls({
           <div className="flex items-center gap-2">
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <motion.div whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-white/70 hover:bg-white/10"
-                    disabled={disabled || skipCooldown}
-                    onClick={() => handleSkip(onPrev, 'prev')}
-                    aria-label="上一首"
-                  >
-                    <SkipBack className="size-5" fill="currentColor" />
-                  </Button>
-                </motion.div>
+                <MediaButton
+                  disabled={disabled || skipCooldown}
+                  onClick={() => handleSkip(onPrev, 'prev')}
+                  aria-label="上一首"
+                  className="h-14 w-14"
+                >
+                  <RewindIcon className="h-10 w-10" />
+                </MediaButton>
               </TooltipTrigger>
               <TooltipContent>上一首</TooltipContent>
             </Tooltip>
 
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-14 w-14 rounded-full bg-white/20 text-white/90 hover:bg-white/30 hover:text-white"
-                    disabled={disabled || playCooldown}
-                    onClick={handlePlayPause}
-                    aria-label={isPlaying ? '暂停' : '播放'}
-                  >
-                    {isPlaying ? (
-                      <Pause className="size-7" fill="currentColor" />
-                    ) : (
-                      <Play className="ml-0.5 size-7" fill="currentColor" />
-                    )}
-                  </Button>
-                </motion.div>
+                <MediaButton
+                  disabled={disabled || playCooldown}
+                  onClick={handlePlayPause}
+                  aria-label={isPlaying ? '暂停' : '播放'}
+                  className="h-14 w-14"
+                >
+                  {isPlaying ? (
+                    <PauseIcon className="h-6 w-6" />
+                  ) : (
+                    <PlayIcon className="h-6 w-6" />
+                  )}
+                </MediaButton>
               </TooltipTrigger>
               <TooltipContent>{isPlaying ? '暂停' : '播放'}</TooltipContent>
             </Tooltip>
 
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <motion.div whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-white/70 hover:bg-white/10"
-                    disabled={disabled || skipCooldown}
-                    onClick={() => handleSkip(onNext, 'next')}
-                    aria-label="下一首"
-                  >
-                    <SkipForward className="size-5" fill="currentColor" />
-                  </Button>
-                </motion.div>
+                <MediaButton
+                  disabled={disabled || skipCooldown}
+                  onClick={() => handleSkip(onNext, 'next')}
+                  aria-label="下一首"
+                  className="h-14 w-14"
+                >
+                  <ForwardIcon className="h-10 w-10" />
+                </MediaButton>
               </TooltipTrigger>
               <TooltipContent>下一首</TooltipContent>
             </Tooltip>
@@ -257,22 +229,18 @@ export const PlayerControls = memo(function PlayerControls({
           <div className="flex flex-1 items-center justify-end">
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <motion.div whileTap={{ scale: 0.9 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative h-9 w-9 text-white/70 hover:bg-white/10"
-                    onClick={onOpenQueue}
-                    aria-label="播放列表"
-                  >
-                    <ListMusic className="size-5" />
-                    {queueLength > 0 && (
-                      <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/90 px-1 text-[10px] font-semibold leading-none text-black">
-                        {queueLength > 99 ? '99+' : queueLength}
-                      </span>
-                    )}
-                  </Button>
-                </motion.div>
+                <MediaButton
+                  onClick={onOpenQueue}
+                  aria-label="播放列表"
+                  className="relative h-10 w-10"
+                >
+                  <PlaylistIcon className="h-6 w-6" />
+                  {queueLength > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/90 px-1 text-[10px] font-semibold leading-none text-black">
+                      {queueLength > 99 ? '99+' : queueLength}
+                    </span>
+                  )}
+                </MediaButton>
               </TooltipTrigger>
               <TooltipContent>播放列表</TooltipContent>
             </Tooltip>
