@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
@@ -8,6 +8,7 @@ import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-ro
 import { Toaster } from 'sonner'
 import { AnimatePresence } from 'motion/react'
 import { AlertTriangle } from 'lucide-react'
+import { useE2BSkin } from '@/hooks/useE2BSkin'
 
 // Lazy-loaded routes (keep HomePage sync for fast first paint)
 const RoomPage = lazy(() => import('@/pages/RoomPage'))
@@ -76,6 +77,33 @@ function AnimatedRoutes() {
   )
 }
 
+/**
+ * E2B 皮肤固定层：点阵背景 + 滚动进度条 + 自定义光标。
+ * 放在 Router 外层，路由切换时不卸载，常驻 DOM。
+ */
+function E2BSkinLayers() {
+  const cursorRef = useRef<HTMLDivElement | null>(null)
+  const scrollProgressRef = useRef<HTMLDivElement | null>(null)
+  const sideScrollRef = useRef<HTMLDivElement | null>(null)
+  useE2BSkin({ cursorRef, scrollProgressRef, sideScrollRef })
+
+  return (
+    <>
+      <div className="dotted-bg" aria-hidden="true" />
+      <div ref={scrollProgressRef} className="scroll-progress" aria-hidden="true" />
+      <div ref={sideScrollRef} className="side-scroll-indicator" aria-hidden="true">
+        <span />
+      </div>
+      <div ref={cursorRef} className="cursor" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+    </>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -85,6 +113,7 @@ export default function App() {
             <AnimatedRoutes />
           </ErrorBoundary>
           <Toaster position="top-center" richColors />
+          <E2BSkinLayers />
         </TooltipProvider>
       </SocketProvider>
     </BrowserRouter>

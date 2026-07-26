@@ -3,15 +3,25 @@
 @import 'shadcn/tailwind.css';
 
 /* Fonts are loaded via <link> in index.html */
+/* MiSans 子集中文回退字体 */
+@font-face {
+  font-family: 'MiSans';
+  src: url('/fonts/MiSans-subset.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --font-sans: 'IBM Plex Sans', 'MiSans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -46,78 +56,744 @@
   --animate-marquee: marquee 10s ease-in-out infinite;
 }
 
-/* ===== Soft Zinc palette — dark, subtle blue tint ===== */
+/* ═══════════════════════════════════════════════════════════════════
+   E2B design language — color tokens
+   Light theme (浅色) — 对齐 main/style.css 与 status style.css
+   ═══════════════════════════════════════════════════════════════════ */
 :root {
+  color-scheme: light;
+  --radius: 0;
+
+  --bg: #fafafa;
+  --bg-1: #f5f5f5;
+  --bg-hover: #f5f5f5;
+  --bg-highlight: #f2f2f2;
+  --bg-inverted: #0a0a0a;
+  --bg-inverted-hover: #292929;
+
+  --fill: #ebebeb;
+  --fill-highlight: #d6d6d6;
+
+  --stroke: #d6d6d6;
+  --stroke-active: #c2c2c2;
+
+  --fg: #0a0a0a;
+  --fg-secondary: #333333;
+  --fg-tertiary: #707070;
+  --fg-inverted: #ffffff;
+
+  --accent-main: #e56f00;
+  --accent-main-bg: rgba(229, 111, 0, 0.16);
+
+  --accent-positive: #00d992;
+  --accent-positive-bg: rgba(0, 217, 146, 0.16);
+
+  --accent-negative: #ff4757;
+  --accent-negative-bg: rgba(255, 71, 87, 0.16);
+
+  --font-sans: 'IBM Plex Sans', 'MiSans', system-ui, -apple-system, sans-serif;
+  --font-apple: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+  /* shadcn 语义变量映射到 E2B 角色 */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--bg);
+  --card-foreground: var(--fg);
+  --popover: var(--bg);
+  --popover-foreground: var(--fg);
+  --primary: var(--bg-inverted);
+  --primary-foreground: var(--fg-inverted);
+  --secondary: var(--fill);
+  --secondary-foreground: var(--fg);
+  --muted: var(--fill);
+  --muted-foreground: var(--fg-tertiary);
+  --accent: var(--bg-hover);
+  --accent-foreground: var(--fg);
+  --destructive: var(--accent-negative);
+  --destructive-foreground: var(--fg-inverted);
+  --border: var(--stroke);
+  --input: var(--stroke);
+  --ring: var(--fg-tertiary);
+
+  --chart-1: var(--accent-main);
+  --chart-2: var(--accent-positive);
+  --chart-3: #3b6ea5;
+  --chart-4: #8b5cf6;
+  --chart-5: var(--accent-negative);
+
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--fg);
+  --sidebar-primary: var(--accent-main);
+  --sidebar-primary-foreground: var(--fg-inverted);
+  --sidebar-accent: var(--bg-hover);
+  --sidebar-accent-foreground: var(--fg);
+  --sidebar-border: var(--stroke);
+  --sidebar-ring: var(--fg-tertiary);
+}
+
+/* Dark theme (深色) */
+.dark {
   color-scheme: dark;
-  --radius: 0.625rem;
-  --background: oklch(0.178 0.005 265);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.235 0.008 265);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.265 0.008 265);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.28 0.008 265);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.28 0.008 265);
-  --muted-foreground: oklch(0.65 0.005 265);
-  --accent: oklch(0.35 0.008 265);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.556 0.005 265);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.171 62.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.22 0.008 265);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.28 0.008 265);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.439 0.005 265);
+
+  --bg: #0a0a0a;
+  --bg-1: #141414;
+  --bg-hover: #141414;
+  --bg-highlight: #1f1f1f;
+  --bg-inverted: #ffffff;
+  --bg-inverted-hover: #ebebeb;
+
+  --fill: #292929;
+  --fill-highlight: #383838;
+
+  --stroke: #292929;
+  --stroke-active: #424242;
+
+  --fg: #ffffff;
+  --fg-secondary: #e6e6e6;
+  --fg-tertiary: #848484;
+  --fg-inverted: #0a0a0a;
+
+  --accent-main: #ff8800;
+  --accent-main-bg: rgba(255, 136, 0, 0.16);
+
+  --accent-positive: #00d992;
+  --accent-positive-bg: rgba(0, 217, 146, 0.16);
+
+  --accent-negative: #ff4757;
+  --accent-negative-bg: rgba(255, 71, 87, 0.16);
+
+  /* shadcn 语义变量跟随深色 */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--bg);
+  --card-foreground: var(--fg);
+  --popover: var(--bg);
+  --popover-foreground: var(--fg);
+  --primary: var(--bg-inverted);
+  --primary-foreground: var(--fg-inverted);
+  --secondary: var(--fill);
+  --secondary-foreground: var(--fg);
+  --muted: var(--fill);
+  --muted-foreground: var(--fg-tertiary);
+  --accent: var(--bg-hover);
+  --accent-foreground: var(--fg);
+  --destructive: var(--accent-negative);
+  --destructive-foreground: var(--fg-inverted);
+  --border: var(--stroke);
+  --input: var(--stroke);
+  --ring: var(--fg-tertiary);
+
+  --chart-1: var(--accent-main);
+  --chart-2: var(--accent-positive);
+  --chart-3: #3b6ea5;
+  --chart-4: #8b5cf6;
+  --chart-5: var(--accent-negative);
+
+  --sidebar: var(--bg);
+  --sidebar-foreground: var(--fg);
+  --sidebar-primary: var(--accent-main);
+  --sidebar-primary-foreground: var(--fg-inverted);
+  --sidebar-accent: var(--bg-hover);
+  --sidebar-accent-foreground: var(--fg);
+  --sidebar-border: var(--stroke);
+  --sidebar-ring: var(--fg-tertiary);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    /* E2B：全局零圆角、零阴影（功能性圆形见下方豁免） */
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
+
+  /* 功能性圆形控件豁免：头像、播放钮、slider 拨杆、switch、滚动条、
+     resize 把手、drawer 抓手、loading spinner、状态圆点、AMLL MediaButton 等。
+     仅放行 rounded-full（语义上的正圆），方框圆角 rounded-* 仍为零。 */
+  .rounded-full,
+  [class*='rounded-full'],
+  .media-button {
+    border-radius: 9999px !important;
+  }
+  /* 方形 variant：列表行内操作按钮（上移/下移/置顶/移除等）hover 背景为方形。
+     specificity 高于上面的 .media-button 圆形规则，覆盖成 0。 */
+  .media-button.is-square {
+    border-radius: 0 !important;
+    aspect-ratio: auto;
+  }
+  /* 徽章药丸在 E2B 里也压成方形 tag */
+  [data-slot='badge'] {
+    border-radius: 0 !important;
+  }
+  /* Apple Music 风格封面：超椭圆圆角（amll-page Cover 规格 max(2%, 0.7vh)） */
+  .apple-cover {
+    border-radius: max(2%, 0.7vh) !important;
+  }
+  /* 封面柔和投影（amll-page Cover drop-shadow 规格） */
+  .cover-shadow {
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+  }
+  /* 歌词面板圆角（豁免全局压平） */
+  .lyric-panel {
+    border-radius: 16px !important;
+    overflow: hidden;
+  }
+  /* 浮层（主题色背景）上的 Slider：用主题色替代默认白色 */
+  .slider-on-surface [data-slot='slider-track'] {
+    background-color: var(--fill) !important;
+  }
+  .slider-on-surface [data-slot='slider-range'] {
+    background-color: var(--fg) !important;
+  }
+  .slider-on-surface [data-slot='slider-thumb'] {
+    background-color: var(--fg) !important;
+    border-color: var(--fg) !important;
+  }
+
+  html {
+    scrollbar-width: none;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    font-family:
-      'Plus Jakarta Sans',
-      system-ui,
-      -apple-system,
-      sans-serif;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    min-height: 100vh;
+    line-height: 1.25;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 代码字体 */
+  pre,
+  code,
+  kbd {
+    font-family: var(--font-mono);
+    font-feature-settings: 'liga' 0, 'calt' 0;
+  }
+
+  /* 链接与选中色 — E2B 橙 */
+  ::selection {
+    background: var(--accent-main-bg);
+    color: var(--accent-main);
+    text-shadow: none;
+  }
+  ::-moz-selection {
+    background: var(--accent-main-bg);
+    color: var(--accent-main);
+    text-shadow: none;
   }
 }
 
-/* ===== Scrollbar styling ===== */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* AMLL 风格媒体按钮（照搬 amll-page react-full MediaButton） */
+@keyframes pressed-animation {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+.media-button {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px !important;
+  position: relative;
+  background-color: #fff0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: #fff;
 }
-::-webkit-scrollbar-thumb {
-  background: oklch(0.5 0 0 / 20%);
-  border-radius: 3px;
+.media-button:hover {
+  background-color: #fff2;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0 / 40%);
+.media-button:active {
+  background-color: #fff2;
+}
+.media-button:active * {
+  animation-name: none !important;
+}
+.media-button > * {
+  transition: transform 0.5s;
+  transform-origin: center;
+  animation: pressed-animation 0.7s;
+  animation-composition: accumulate;
 }
 
-/* Firefox scrollbar */
+/* 喇叭声波动画（照搬 amll-page VolumeControlSlider）：3 段 scale 弹性，一次性 forwards。
+   由父级 .speaker-animate class 触发（点击 mute/unmute 时短暂添加）。 */
+@keyframes speaker-bounce-part1 {
+  to {
+    transform: scale(1.2);
+  }
+}
+@keyframes speaker-bounce-part2 {
+  to {
+    transform: scale(0.85);
+  }
+}
+@keyframes speaker-bounce-part3 {
+  to {
+    transform: scale(1);
+  }
+}
+.speaker-animate .speaker-bounce-1 {
+  animation:
+    speaker-bounce-part1 0.2s ease-in-out 0s forwards,
+    speaker-bounce-part2 0.2s ease-in-out 0.2s forwards,
+    speaker-bounce-part3 0.2s ease-in-out 0.4s forwards;
+  transform-origin: center;
+}
+.speaker-animate .speaker-bounce-2 {
+  animation:
+    speaker-bounce-part1 0.2s ease-in-out 0.05s forwards,
+    speaker-bounce-part2 0.2s ease-in-out 0.25s forwards,
+    speaker-bounce-part3 0.2s ease-in-out 0.45s forwards;
+  transform-origin: center;
+}
+.speaker-animate .speaker-bounce-3 {
+  animation:
+    speaker-bounce-part1 0.2s ease-in-out 0.1s forwards,
+    speaker-bounce-part2 0.2s ease-in-out 0.3s forwards,
+    speaker-bounce-part3 0.2s ease-in-out 0.5s forwards;
+  transform-origin: center;
+}
+.speaker-animate .speaker-bounce-4 {
+  animation:
+    speaker-bounce-part1 0.2s ease-in-out 0.15s forwards,
+    speaker-bounce-part2 0.2s ease-in-out 0.35s forwards,
+    speaker-bounce-part3 0.2s ease-in-out 0.55s forwards;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .speaker-animate .speaker-bounce-1,
+  .speaker-animate .speaker-bounce-2,
+  .speaker-animate .speaker-bounce-3,
+  .speaker-animate .speaker-bounce-4 {
+    animation: none;
+  }
+}
+/* 房间内页次级透明图标按钮（音量等，配合原生 button.media-ghost） */
+.media-ghost {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+.media-ghost:hover {
+  color: var(--fg);
+}
+.media-ghost:active {
+  transform: scale(0.9);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — dotted background (点阵背景)
+   ═══════════════════════════════════════════════════════════════════ */
+.dotted-bg {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--fg-tertiary) 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+.dark .dotted-bg {
+  opacity: 0.2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — scroll progress bars (滚动进度条)
+   ═══════════════════════════════════════════════════════════════════ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 300;
+  width: 100%;
+  height: 2px;
+  background: var(--fg);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.side-scroll-indicator {
+  position: fixed;
+  top: 72px;
+  right: 12px;
+  bottom: 24px;
+  z-index: 90;
+  width: 3px;
+  background: var(--fill);
+  pointer-events: none;
+}
+.side-scroll-indicator span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--fg);
+  transform: scaleY(0.08);
+  transform-origin: top center;
+}
+
+@media (max-width: 600px) {
+  .side-scroll-indicator {
+    display: none;
+  }
+}
+
+/* 房间内页隐藏装饰性滚动条（顶部进度条 + 右侧指示器） */
+body.in-room .scroll-progress,
+body.in-room .side-scroll-indicator {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — section label  [LABEL]
+   ═══════════════════════════════════════════════════════════════════ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+.section-label::before {
+  content: '[';
+}
+.section-label::after {
+  content: ']';
+}
+
+/* Hero 大字标题（照搬 lst/src/App.vue .hero-title） */
+.hero-title {
+  font-family: var(--font-sans);
+  font-size: clamp(2.5rem, 9vw, 5rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  color: var(--fg);
+  margin: 12px 0 10px;
+}
+.hero-desc {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--fg-tertiary);
+  max-width: 420px;
+  margin: 16px auto 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — card hover (硬阴影位移) 与交互元素 hover
+   给可交互卡片/按钮加 .e2b-hover 即获得 E2B 经典硬阴影 hover。
+   ═══════════════════════════════════════════════════════════════════ */
+.e2b-hover,
+.e2b-card-hover {
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s cubic-bezier(0.8, 0, 0.2, 1),
+    box-shadow 0.15s cubic-bezier(0.8, 0, 0.2, 1);
+}
+.e2b-hover:hover,
+.e2b-card-hover:hover {
+  background: var(--bg-hover);
+  transform: translate(-3px, -3px);
+  /* 临时覆盖全局 box-shadow:none */
+  box-shadow: 3px 3px 0 var(--stroke) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — top-bar / theme-toggle / nav-link 样式
+   供 HomePage header 等直接使用（照搬 lst/src/style.css）
+   ═══════════════════════════════════════════════════════════════════ */
+/* Top Bar — fixed 全宽贴顶，与 lst/main 一致 */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--stroke);
+  background: var(--bg);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+/* 内容区下移，避开 fixed top-bar */
+.has-top-bar {
+  padding-top: 64px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Theme Toggle — 照搬 status/rishus-status-public/src/style.css:830 */
+.theme-toggle {
+  box-sizing: border-box;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  background: var(--bg);
+  border: 1px solid var(--stroke);
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', 'MiSans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  text-transform: uppercase;
+  height: 31px;
+  transition: all 0.15s ease;
+}
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--stroke-active);
+}
+.theme-toggle svg {
+  display: block;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+/* nav 里的方形图标钮（头像等）：与 theme-toggle 同款边框/背景/hover，正方形 31×31 */
+.nav-icon-btn {
+  box-sizing: border-box;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  background: var(--bg);
+  border: 1px solid var(--stroke);
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nav-icon-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--stroke-active);
+}
+.nav-icon-btn svg {
+  display: block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — Footer（照搬 status/rishus-status-public/src/style.css:723-755）
+   ═══════════════════════════════════════════════════════════════════ */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--stroke);
+  font-family: 'IBM Plex Sans', 'MiSans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+}
+.footer-left,
+.footer-right,
+.refresh-info,
+.last-update,
+.footer-credit {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.footer-link {
+  color: var(--fg);
+  border-bottom: 1px solid var(--stroke);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.footer-link:hover {
+  color: var(--accent-main);
+  border-color: var(--accent-main);
+}
+
+@media (max-width: 600px) {
+  .footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .theme-toggle,
+  .nav-icon-btn {
+    padding: 0 !important;
+    width: 24px;
+    height: 24px;
+    justify-content: center;
+    border: none;
+    background: transparent;
+  }
+  .theme-toggle svg,
+  .nav-icon-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .theme-toggle #themeText {
+    display: none;
+  }
+  .nav-right {
+    gap: 8px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — custom L-shaped cursor (自定义光标)
+   ═══════════════════════════════════════════════════════════════════ */
+.cursor {
+  --cursor-width: 26px;
+  --cursor-height: 26px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--cursor-width);
+  height: var(--cursor-height);
+  pointer-events: none;
+  z-index: 10000;
+  background: transparent;
+  mix-blend-mode: difference;
+  transition:
+    width 0.25s cubic-bezier(0.8, 0, 0.2, 1),
+    height 0.25s cubic-bezier(0.8, 0, 0.2, 1),
+    opacity 0.2s ease;
+  will-change: transform;
+  display: none;
+}
+.cursor span {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: #fff;
+  transition:
+    width 0.25s cubic-bezier(0.8, 0, 0.2, 1),
+    height 0.25s cubic-bezier(0.8, 0, 0.2, 1);
+}
+body.has-custom-cursor .cursor {
+  display: block;
+}
+.cursor span:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-top: 2px solid #fff;
+  border-left: 2px solid #fff;
+}
+.cursor span:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-top: 2px solid #fff;
+  border-right: 2px solid #fff;
+}
+.cursor span:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid #fff;
+  border-left: 2px solid #fff;
+}
+.cursor span:nth-child(4) {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+}
+.cursor.is-hover span {
+  width: 16px;
+  height: 16px;
+}
+.cursor.is-hidden {
+  opacity: 0;
+}
+body.has-custom-cursor,
+body.has-custom-cursor * {
+  cursor: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  .cursor {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   E2B — magnetic buttons (磁吸按钮)
+   给元素加 .is-magnetic 类，由 hook 写入 --mx/--my
+   ═══════════════════════════════════════════════════════════════════ */
+.is-magnetic {
+  --mx: 0;
+  --my: 0;
+  transform: translate(calc(var(--mx) * 1px), calc(var(--my) * 1px));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.is-magnetic:active {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Scrollbar — 全局隐藏（与 E2B 一致，页面用顶部进度条 + 右侧指示器替代）
+   ═══════════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
 * {
-  scrollbar-width: thin;
-  scrollbar-color: oklch(0.5 0 0 / 20%) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Utility: hide scrollbar while keeping scroll functional */
@@ -129,7 +805,9 @@
   scrollbar-width: none;
 }
 
-/* ===== Marquee text overflow animation ===== */
+/* ═══════════════════════════════════════════════════════════════════
+   Marquee text overflow animation
+   ═══════════════════════════════════════════════════════════════════ */
 @keyframes marquee {
   0%,
   15% {
@@ -145,7 +823,9 @@
   }
 }
 
-/* ===== Reduced motion ===== */
+/* ═══════════════════════════════════════════════════════════════════
+   Reduced motion
+   ═══════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -157,7 +837,9 @@
   }
 }
 
-/* ===== AMLL Lyric Player overrides ===== */
+/* ═══════════════════════════════════════════════════════════════════
+   AMLL Lyric Player overrides
+   ═══════════════════════════════════════════════════════════════════ */
 .amll-container {
   color: var(--foreground);
   opacity: 0.9;
