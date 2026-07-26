@@ -123,6 +123,9 @@ packages/
 | --------------------------------------------------------------------------------------------- | ------------------ |
 | [Howler.js](https://github.com/goldfire/howler.js)                                            | Web 音频播放       |
 | [Apple Music-like Lyrics](https://github.com/Steve-xmh/applemusic-like-lyrics)                | 歌词组件 (GPL-3.0) |
+| [amll-player / amll-page 内部组件](https://github.com/Steve-xmh/applemusic-like-lyrics)        | MediaButton / Cover(Squircle) / 喇叭·列表·播放图标 / 跳歌动画 (GPL-3.0) |
+| [IBM Plex Sans / JetBrains Mono / Inter / Noto Sans SC](https://fonts.google.com)             | 字体               |
+| [MiSans](https://github.com/miComser/miSans)                                                  | 中文回退字体       |
 | [Meting](https://github.com/metowolf/Meting)                                                  | 多平台音乐 API     |
 | [NeteaseCloudMusicApi Enhanced](https://github.com/NeteaseCloudMusicApiEnhanced/api-enhanced) | 网易云音乐 API     |
 | [CASL](https://github.com/stalniy/casl)                                                       | 权限管理           |
