@@ -31,21 +31,25 @@ function setRoleIfChanged(user: User, role: UserRole): boolean {
 }
 
 /**
- * 保证非空房间始终至少有一个具备管理能力的在线用户。
+ * 保证非空房间始终至少有一个具备管理能力的在线用户，并维护临时管理员集合。
  *
- * - creator 在线：creator 为 owner，清除临时管理员
- * - 持久 admin 在线：保持 admin，清除临时管理员
- * - owner / 持久 admin 都不在线：授予一个在线用户临时 admin
+ * - creator 在线：creator 为 owner，清空临时管理员集合
+ * - 持久 admin 在线：保持 admin，清空临时管理员集合（房主/持久 admin 上线时
+ *   所有临时管理员自动降回 member —— "房主上线自动降级"语义）
+ * - owner / 持久 admin 都不在线：保留并剪枝临时管理员集合（移除已离线成员），
+ *   仅当集合为空时自动授予 users[0] 临时 admin，保证非空房间始终 ≥1 个可管理在线用户。
+ *   显式凭 superPassword 授权的成员已在集合中，不会被这里的自动补位覆盖。
+ *   集合内 → admin，其余 → member。
  *
- * 临时 admin 仅存在于当前在线会话，不写入 adminUserIds；当 owner / 持久 admin
+ * 临时管理员仅存在于当前在线会话，不写入 adminUserIds；当 owner / 持久 admin
  * 回来时自动降回 member。
  */
 function reconcileRoomRoles(room: RoomData): boolean {
   let changed = false
 
   if (room.users.length === 0) {
-    if (room.temporaryAdminUserId !== null) {
-      room.temporaryAdminUserId = null
+    if (room.temporaryAdminUserIds.size > 0) {
+      room.temporaryAdminUserIds.clear()
       changed = true
     }
     return changed
@@ -54,8 +58,8 @@ function reconcileRoomRoles(room: RoomData): boolean {
   const hasOnlinePermanentPrivileged = room.users.some((u) => isPermanentPrivileged(room, u.id))
 
   if (hasOnlinePermanentPrivileged) {
-    if (room.temporaryAdminUserId !== null) {
-      room.temporaryAdminUserId = null
+    if (room.temporaryAdminUserIds.size > 0) {
+      room.temporaryAdminUserIds.clear()
       changed = true
     }
     for (const user of room.users) {
@@ -65,14 +69,25 @@ function reconcileRoomRoles(room: RoomData): boolean {
     return changed
   }
 
-  const currentTempStillOnline = room.users.some((u) => u.id === room.temporaryAdminUserId)
-  if (!room.temporaryAdminUserId || !currentTempStillOnline) {
-    room.temporaryAdminUserId = room.users[0]!.id
+  // 无在线特权用户：先剪枝掉已离线的临时管理员（处理"提权后断线"等情况）
+  const onlineIds = new Set(room.users.map((u) => u.id))
+  for (const tempId of room.temporaryAdminUserIds) {
+    if (!onlineIds.has(tempId)) {
+      room.temporaryAdminUserIds.delete(tempId)
+      changed = true
+    }
+  }
+
+  // 自动补位仅当集合为空（没有显式授权的临时管理员幸存）时授予 users[0]
+  // —— 避免覆盖凭 superPassword 显式授权的成员
+  if (room.temporaryAdminUserIds.size === 0) {
+    room.temporaryAdminUserIds.add(room.users[0]!.id)
     changed = true
   }
 
   for (const user of room.users) {
-    changed = setRoleIfChanged(user, user.id === room.temporaryAdminUserId ? 'admin' : 'member') || changed
+    const role: UserRole = room.temporaryAdminUserIds.has(user.id) ? 'admin' : 'member'
+    changed = setRoleIfChanged(user, role) || changed
   }
 
   return changed
@@ -123,10 +138,11 @@ export function createRoom(
     id: roomId,
     name: roomName?.trim() || `${nickname}的房间`,
     password: password || null,
+    superPassword: null,
     creatorId: userId,
     hostId: userId,
     adminUserIds: new Set(),
-    temporaryAdminUserId: null,
+    temporaryAdminUserIds: new Set(),
     audioQuality: 320,
     users: [user],
     queue: [],
@@ -262,7 +278,7 @@ export function listRooms(): RoomListItem[] {
 
 export function updateSettings(
   roomId: string,
-  settings: { name?: string; password?: string | null; audioQuality?: AudioQuality },
+  settings: { name?: string; password?: string | null; superPassword?: string | null; audioQuality?: AudioQuality },
 ): void {
   const room = roomRepo.get(roomId)
   if (!room) return
@@ -274,6 +290,11 @@ export function updateSettings(
   // password: string -> set password; null -> remove password; undefined -> no change
   if (settings.password !== undefined) {
     room.password = settings.password
+  }
+
+  // superPassword: string -> set management password; null -> remove; undefined -> no change
+  if (settings.superPassword !== undefined) {
+    room.superPassword = settings.superPassword
   }
 
   if (settings.audioQuality !== undefined) {
@@ -293,17 +314,69 @@ export function setUserRole(
   // Cannot change owner's role
   if (user.role === 'owner') return { success: false, roleChanged: false, hostChanged: false }
 
-  const directRoleChanged = setRoleIfChanged(user, role)
-  // Sync persistent admin set
+  let roleChanged: boolean
   if (role === 'admin') {
+    // 提升：写入持久 admin 集合；若先前是凭 superPassword 的临时管理员，把它从
+    // 临时集合挪除（随后的 reconcile 在"永久特权在线"分支会清空整个临时集合，
+    // 但显式删除让语义自洽，避免临时/持久身份并存）。
+    roleChanged = setRoleIfChanged(user, 'admin')
     room.adminUserIds.add(targetUserId)
+    room.temporaryAdminUserIds.delete(targetUserId)
+    // 提升后房主（调用者）在线 → 永久特权在线分支，reconcile 清临时集合并按身份定角色
+    const reconciledRoleChanged = reconcileRoomRoles(room)
+    roleChanged = roleChanged || reconciledRoleChanged
   } else {
+    // 降级：只清目标一人，不走 reconcile 的"清空整个临时集合"分支，避免房主降某一人
+    // 时牵连清掉其他凭 superPassword 授权的临时管理员（他们应当保持 admin）。
     room.adminUserIds.delete(targetUserId)
+    room.temporaryAdminUserIds.delete(targetUserId)
+    // 按身份重新定角色：creator→owner、其余 member
+    let changed = false
+    for (const u of room.users) {
+      const r: UserRole = u.id === room.creatorId ? 'owner' : room.adminUserIds.has(u.id) ? 'admin' : 'member'
+      changed = setRoleIfChanged(u, r) || changed
+    }
+    roleChanged = changed
   }
-  const reconciledRoleChanged = reconcileRoomRoles(room)
   // Re-elect conductor (admin promotion/demotion may change priority)
   const hostChanged = electConductor(room)
-  return { success: true, roleChanged: directRoleChanged || reconciledRoleChanged, hostChanged }
+  return { success: true, roleChanged, hostChanged }
+}
+
+/**
+ * 房间内成员凭管理密码（superPassword）获取临时 admin 权限。
+ *
+ * 临时管理员写入 temporaryAdminUserIds 集合（支持多人同时持有），不写入 adminUserIds，
+ * 不调用 reconcileRoomRoles（避免其覆盖显式授权）；仅 setRoleIfChanged + electConductor。
+ * 房主/持久 admin 上线时由后续 reconcile 清空集合，对应自动降级语义。
+ */
+export function grantTempAdminByPassword(
+  roomId: string,
+  userId: string,
+  superPassword: string,
+): { success: boolean; errorCode?: string; roleChanged: boolean; hostChanged: boolean } {
+  const room = roomRepo.get(roomId)
+  if (!room) return { success: false, errorCode: 'ROOM_NOT_FOUND', roleChanged: false, hostChanged: false }
+  if (room.superPassword === null) {
+    return { success: false, errorCode: 'SUPER_PASSWORD_NOT_SET', roleChanged: false, hostChanged: false }
+  }
+  const user = room.users.find((u) => u.id === userId)
+  if (!user) return { success: false, errorCode: 'NOT_IN_ROOM', roleChanged: false, hostChanged: false }
+  // 已是永久特权用户（owner / 持久 admin）：no-op 成功，不动集合、不广播
+  if (isPermanentPrivileged(room, userId)) {
+    return { success: true, roleChanged: false, hostChanged: false }
+  }
+  if (!safeCompare(superPassword, room.superPassword)) {
+    return { success: false, errorCode: 'WRONG_SUPER_PASSWORD', roleChanged: false, hostChanged: false }
+  }
+  // 幂等：已是临时管理员则不重复广播
+  if (room.temporaryAdminUserIds.has(userId) && user.role === 'admin') {
+    return { success: true, roleChanged: false, hostChanged: false }
+  }
+  room.temporaryAdminUserIds.add(userId)
+  const roleChanged = setRoleIfChanged(user, 'admin')
+  const hostChanged = electConductor(room)
+  return { success: true, roleChanged, hostChanged }
 }
 
 export function getUserBySocket(socketId: string): User | null {

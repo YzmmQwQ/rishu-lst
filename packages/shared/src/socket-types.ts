@@ -31,6 +31,8 @@ export interface ServerToClientEvents {
     name: string
     hasPassword: boolean
     password?: string | null
+    hasSuperPassword: boolean
+    superPassword?: string | null
     audioQuality: AudioQuality
   }) => void
   [EVENTS.ROOM_LIST_UPDATE]: (rooms: RoomListItem[]) => void
@@ -78,6 +80,7 @@ export interface ClientToServerEvents {
   [EVENTS.ROOM_LIST]: () => void
   [EVENTS.ROOM_SETTINGS]: (data: { name?: string; password?: string | null; audioQuality?: AudioQuality }) => void
   [EVENTS.ROOM_SET_ROLE]: (data: { userId: string; role: 'admin' | 'member' }) => void
+  [EVENTS.ROOM_GRANT_ADMIN_BY_PASSWORD]: (data: { superPassword: string }) => void
 
   [EVENTS.PLAYER_PLAY]: (data?: { track?: Track }) => void
   [EVENTS.PLAYER_PAUSE]: () => void

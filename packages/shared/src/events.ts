@@ -42,6 +42,7 @@ export const EVENTS = {
   // Role management
   ROOM_SET_ROLE: 'room:set_role',
   ROOM_ROLE_CHANGED: 'room:role_changed',
+  ROOM_GRANT_ADMIN_BY_PASSWORD: 'room:grant_admin_by_password',
 
   // Voting
   VOTE_START: 'vote:start',

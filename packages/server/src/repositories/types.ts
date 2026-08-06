@@ -5,13 +5,19 @@ export interface RoomData {
   id: string
   name: string
   password: string | null
+  /** 管理密码：房主设置后，房间内任意成员输入正确密码即可获取临时 admin（与 join 的 password 互相独立） */
+  superPassword: string | null
   /** 房间创建者 ID（永久不变，创建者为 owner，加入时自动成为 conductor） */
   creatorId: string
   hostId: string
   /** 持久化 admin 用户 ID 集合（离开/回来自动恢复 admin） */
   adminUserIds: Set<string>
-  /** 临时管理员 ID：仅当房间内没有在线 owner / 持久 admin 时授予，不持久化 */
-  temporaryAdminUserId: string | null
+  /**
+   * 临时管理员用户 ID 集合：既包含 reconcileRoomRoles 在无在线特权用户时的自动补位，
+   * 也包含凭管理密码（superPassword）显式授权的成员。owner / 持久 admin 上线时由
+   * reconcileRoomRoles 清空，对应"房主上线自动降级"语义。成员离开时通过在线剪枝移除。
+   */
+  temporaryAdminUserIds: Set<string>
   audioQuality: AudioQuality
   users: User[]
   queue: Track[]

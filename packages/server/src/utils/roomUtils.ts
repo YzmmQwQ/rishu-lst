@@ -9,6 +9,7 @@ export function toPublicRoomState(data: RoomData): RoomState {
     creatorId: data.creatorId,
     hostId: data.hostId,
     hasPassword: data.password !== null,
+    hasSuperPassword: data.superPassword !== null,
     audioQuality: data.audioQuality,
     users: data.users,
     queue: data.queue,
@@ -23,5 +24,6 @@ export function toPublicRoomStateForOwner(data: RoomData): RoomState {
   return {
     ...toPublicRoomState(data),
     password: data.password ?? null,
+    superPassword: data.superPassword ?? null,
   }
 }

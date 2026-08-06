@@ -23,12 +23,17 @@ export const audioQualitySchema = z.union([z.literal(128), z.literal(192), z.lit
 export const roomSettingsSchema = z.object({
   name: z.string().min(1).max(LIMITS.ROOM_NAME_MAX_LENGTH).optional(),
   password: z.string().max(LIMITS.ROOM_PASSWORD_MAX_LENGTH).nullable().optional(),
+  superPassword: z.string().max(LIMITS.SUPER_PASSWORD_MAX_LENGTH).nullable().optional(),
   audioQuality: audioQualitySchema.optional(),
 })
 
 export const setRoleSchema = z.object({
   userId: z.string().min(1),
   role: z.enum(['admin', 'member']),
+})
+
+export const roomGrantAdminByPasswordSchema = z.object({
+  superPassword: z.string().min(1).max(LIMITS.SUPER_PASSWORD_MAX_LENGTH),
 })
 
 // ---------------------------------------------------------------------------

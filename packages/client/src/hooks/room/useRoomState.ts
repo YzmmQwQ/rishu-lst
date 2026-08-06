@@ -41,6 +41,9 @@ export function useRoomState() {
       if ('password' in roomState) {
         useRoomStore.getState().setRoomPassword(roomState.password ?? null)
       }
+      if ('superPassword' in roomState) {
+        useRoomStore.getState().setRoomSuperPassword(roomState.superPassword ?? null)
+      }
 
       // Auto-resend persisted auth cookies so the room's cookie pool is populated
       resendCookies()
@@ -62,12 +65,17 @@ export function useRoomState() {
       name: string
       hasPassword: boolean
       password?: string | null
+      hasSuperPassword: boolean
+      superPassword?: string | null
       audioQuality: AudioQuality
     }) => {
       useRoomStore.getState().updateRoom(settings)
       // 存储密码明文（服务端广播）
       if ('password' in settings) {
         useRoomStore.getState().setRoomPassword(settings.password ?? null)
+      }
+      if ('superPassword' in settings) {
+        useRoomStore.getState().setRoomSuperPassword(settings.superPassword ?? null)
       }
     }
 
