@@ -26,9 +26,11 @@ interface SettingsDialogProps {
   onUpdateSettings: (settings: {
     name?: string
     password?: string | null
+    superPassword?: string | null
     audioQuality?: import('@music-together/shared').AudioQuality
   }) => void
   onSetUserRole?: (userId: string, role: 'admin' | 'member') => void
+  onGrantAdminByPassword?: (superPassword: string) => void
   initialTab?: SettingsTab
 }
 
@@ -84,6 +86,7 @@ export function SettingsDialog({
   onOpenChange,
   onUpdateSettings,
   onSetUserRole,
+  onGrantAdminByPassword,
   initialTab,
 }: SettingsDialogProps) {
   const [tab, setTab] = useState<SettingsTab>('room')
@@ -143,7 +146,9 @@ export function SettingsDialog({
             <ScrollArea className="min-h-0 flex-1">
               <div className="p-4 sm:p-6">
                 {tab === 'room' && <RoomSettingsSection onUpdateSettings={onUpdateSettings} />}
-                {tab === 'members' && <MembersSection onSetUserRole={onSetUserRole} />}
+                {tab === 'members' && (
+                  <MembersSection onSetUserRole={onSetUserRole} onGrantAdminByPassword={onGrantAdminByPassword} />
+                )}
                 {tab === 'lyrics' && <LyricsSection />}
                 {tab === 'appearance' && <AppearanceSection />}
               </div>

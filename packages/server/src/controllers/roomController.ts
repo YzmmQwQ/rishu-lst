@@ -2,12 +2,14 @@ import {
   ERROR_CODE,
   EVENTS,
   roomCreateSchema,
+  roomGrantAdminByPasswordSchema,
   roomJoinSchema,
   roomSettingsSchema,
   setRoleSchema,
 } from '@music-together/shared'
 import type { TypedServer, TypedSocket } from '../middleware/types.js'
 import { createWithOwnerOnly } from '../middleware/withControl.js'
+import { createWithRoom } from '../middleware/withRoom.js'
 import { cleanupSocketRateLimit } from '../middleware/socketRateLimiter.js'
 import { roomRepo } from '../repositories/roomRepository.js'
 import * as chatService from '../services/chatService.js'
@@ -19,6 +21,7 @@ import { logger } from '../utils/logger.js'
 
 export function registerRoomController(io: TypedServer, socket: TypedSocket) {
   const withOwnerOnly = createWithOwnerOnly(io)
+  const withRoom = createWithRoom(io)
 
   // ---- Room list (不需要在房间内) ----
   socket.on(EVENTS.ROOM_LIST, () => {
@@ -185,24 +188,27 @@ export function registerRoomController(io: TypedServer, socket: TypedSocket) {
       roomService.updateSettings(ctx.roomId, {
         name: parsed.data.name,
         password: parsed.data.password,
+        superPassword: parsed.data.superPassword,
         audioQuality: parsed.data.audioQuality,
       })
 
       const updatedRoom = roomRepo.get(ctx.roomId)
       if (!updatedRoom) return
 
-      // 仅 owner 收到密码明文，其他成员只收到 hasPassword 标记
+      // 仅 owner 收到密码明文（含管理密码），其他成员只收到 hasPassword / hasSuperPassword 标记
       const baseSettings = {
         name: updatedRoom.name,
         hasPassword: updatedRoom.password !== null,
+        hasSuperPassword: updatedRoom.superPassword !== null,
         audioQuality: updatedRoom.audioQuality,
       }
-      // 给 owner 发送含密码的设置
+      // 给 owner 发送含密码明文（join password + 管理密码）的设置
       ctx.socket.emit(EVENTS.ROOM_SETTINGS, {
         ...baseSettings,
         password: updatedRoom.password ?? null,
+        superPassword: updatedRoom.superPassword ?? null,
       })
-      // 给房间内其他成员发送不含密码的设置
+      // 给房间内其他成员发送不含密码明文的设置
       ctx.socket.to(ctx.roomId).emit(EVENTS.ROOM_SETTINGS, baseSettings)
 
       logger.info(`Room ${ctx.roomId} settings updated`, { roomId: ctx.roomId })
@@ -232,14 +238,69 @@ export function registerRoomController(io: TypedServer, socket: TypedSocket) {
         return
       }
 
+      // 房主降级时会牵连其它凭 superPassword 授权的临时管理员一并降级 → 需要把
+      // 整个房间角色重同步给所有客户端，仅广播单个 userId 不够（旁人角色也变了）。
+      // 提升则只涉及目标一人。两者都先广播目标角色变更，再按 hostChanged/roleChanged
+      // 补发完整 ROOM_STATE。
       io.to(ctx.roomId).emit(EVENTS.ROOM_ROLE_CHANGED, { userId, role })
+      // 降级后房内其它成员可能已被 setUserRole 的身份重定改动；把更新后的 users 同步给所有人
+      ctx.socket.to(ctx.roomId).emit(EVENTS.ROOM_STATE, roomService.toPublicRoomState(ctx.room))
       if (result.hostChanged || result.roleChanged) {
         // Owner must keep receiving the password-bearing state; other members
         // (including temporary admins) only receive the public state.
         ctx.socket.emit(EVENTS.ROOM_STATE, roomService.toPublicRoomStateForOwner(ctx.room))
-        ctx.socket.to(ctx.roomId).emit(EVENTS.ROOM_STATE, roomService.toPublicRoomState(ctx.room))
       }
       logger.info(`Role changed: ${userId} -> ${role} in room ${ctx.roomId}`, { roomId: ctx.roomId })
+    }),
+  )
+
+  // ---- Grant temporary admin by super password (任意在线成员可调用) ----
+  socket.on(
+    EVENTS.ROOM_GRANT_ADMIN_BY_PASSWORD,
+    withRoom((ctx, raw) => {
+      const parsed = roomGrantAdminByPasswordSchema.safeParse(raw)
+      if (!parsed.success) {
+        ctx.socket.emit(EVENTS.ROOM_ERROR, {
+          code: ERROR_CODE.INVALID_INPUT,
+          message: parsed.error.issues[0]?.message ?? '输入格式错误',
+        })
+        return
+      }
+
+      const result = roomService.grantTempAdminByPassword(ctx.roomId, ctx.user.id, parsed.data.superPassword)
+      if (!result.success) {
+        const message =
+          result.errorCode === 'WRONG_SUPER_PASSWORD'
+            ? '管理密码错误'
+            : result.errorCode === 'SUPER_PASSWORD_NOT_SET'
+              ? '房主未设置管理密码'
+              : '无法获取管理权限'
+        ctx.socket.emit(EVENTS.ROOM_ERROR, {
+          code: ERROR_CODE[result.errorCode as keyof typeof ERROR_CODE] ?? ERROR_CODE.INTERNAL,
+          message,
+        })
+        return
+      }
+
+      // 广播角色提升（与 ROOM_SET_ROLE 一致的可见性切分）。仅在角色确实变化时广播，
+      // 避免对已是管理员的用户（永久特权 / 已是临时管理员）重复广播。
+      if (result.roleChanged) {
+        io.to(ctx.roomId).emit(EVENTS.ROOM_ROLE_CHANGED, { userId: ctx.user.id, role: 'admin' })
+      }
+      // 若新临时管理员成为主持，广播完整状态保持 hostId 同步
+      if (result.hostChanged) {
+        const owner = ctx.room.users.find((u) => u.role === 'owner')
+        const ownerSocketId = owner ? roomRepo.getSocketIdForUser(ctx.roomId, owner.id) : null
+        if (ownerSocketId) {
+          io.to(ownerSocketId).emit(EVENTS.ROOM_STATE, roomService.toPublicRoomStateForOwner(ctx.room))
+          io.to(ctx.roomId).except(ownerSocketId).emit(EVENTS.ROOM_STATE, roomService.toPublicRoomState(ctx.room))
+        } else {
+          io.to(ctx.roomId).emit(EVENTS.ROOM_STATE, roomService.toPublicRoomState(ctx.room))
+        }
+      }
+      logger.info(`User ${ctx.user.id} granted temp admin via super password in room ${ctx.roomId}`, {
+        roomId: ctx.roomId,
+      })
     }),
   )
 

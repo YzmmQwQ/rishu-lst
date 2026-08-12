@@ -1,12 +1,17 @@
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { useRoomStore } from '@/stores/roomStore'
-import type { UserRole } from '@music-together/shared'
-import { Crown, Shield, User } from 'lucide-react'
+import { LIMITS, type UserRole } from '@music-together/shared'
+import { Crown, KeyRound, Shield, User } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface MembersSectionProps {
   onSetUserRole?: (userId: string, role: 'admin' | 'member') => void
+  onGrantAdminByPassword?: (superPassword: string) => void
 }
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -28,10 +33,22 @@ function getRoleIcon(role: UserRole) {
   }
 }
 
-export function MembersSection({ onSetUserRole }: MembersSectionProps) {
+export function MembersSection({ onSetUserRole, onGrantAdminByPassword }: MembersSectionProps) {
   const room = useRoomStore((s) => s.room)
   const currentUser = useRoomStore((s) => s.currentUser)
   const isOwner = currentUser?.role === 'owner'
+  // 非管理员（member）可凭管理密码提权；已是 owner/admin 不显示入口
+  const canRequestAdmin = currentUser?.role === 'member' && (room?.hasSuperPassword ?? false)
+  const [tempPwd, setTempPwd] = useState('')
+
+  const handleGrant = () => {
+    if (!tempPwd.trim()) {
+      toast.error('请输入管理密码')
+      return
+    }
+    onGrantAdminByPassword?.(tempPwd.trim())
+    setTempPwd('')
+  }
 
   return (
     <div className="space-y-6">
@@ -71,6 +88,34 @@ export function MembersSection({ onSetUserRole }: MembersSectionProps) {
             ))}
         </div>
       </div>
+
+      {/* 非管理员凭管理密码获取临时管理权限 */}
+      {canRequestAdmin && onGrantAdminByPassword && (
+        <div>
+          <h3 className="text-base font-semibold flex items-center gap-2">
+            <KeyRound className="h-4 w-4" />
+            管理员钥匙
+          </h3>
+          <Separator className="mt-2 mb-4" />
+          <p className="text-muted-foreground mb-3 text-xs">
+            输入房主设置的管理密码即可获得临时管理权限（切歌 / 清队列 / 调音质等）。离开房间或房主上线后自动失效。
+          </p>
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              placeholder="输入管理密码..."
+              value={tempPwd}
+              onChange={(e) => setTempPwd(e.target.value)}
+              maxLength={LIMITS.SUPER_PASSWORD_MAX_LENGTH}
+              className="flex-1"
+              onKeyDown={(e) => e.key === 'Enter' && handleGrant()}
+            />
+            <Button size="sm" onClick={handleGrant}>
+              获取权限
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

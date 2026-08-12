@@ -27,13 +27,19 @@ function getQualityLabel(quality: AudioQuality): string {
 }
 
 interface RoomSettingsSectionProps {
-  onUpdateSettings: (settings: { name?: string; password?: string | null; audioQuality?: AudioQuality }) => void
+  onUpdateSettings: (settings: {
+    name?: string
+    password?: string | null
+    superPassword?: string | null
+    audioQuality?: AudioQuality
+  }) => void
 }
 
 export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionProps) {
   const room = useRoomStore((s) => s.room)
   const currentUser = useRoomStore((s) => s.currentUser)
   const roomPassword = useRoomStore((s) => s.roomPassword)
+  const roomSuperPassword = useRoomStore((s) => s.roomSuperPassword)
   const syncDrift = usePlayerStore((s) => s.syncDrift)
   const isOwner = currentUser?.role === 'owner'
 
@@ -45,6 +51,10 @@ export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionPro
   }, [syncDrift])
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordEnabled, setPasswordEnabled] = useState(room?.hasPassword ?? false)
+
+  // 管理密码（superPassword）：房主设置后，房间内任意成员输入即可获临时 admin
+  const [superPasswordInput, setSuperPasswordInput] = useState('')
+  const [superPasswordEnabled, setSuperPasswordEnabled] = useState(room?.hasSuperPassword ?? false)
 
   // 昵称编辑
   const [nickname, setNickname] = useState(storage.getNickname())
@@ -64,6 +74,13 @@ export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionPro
     setPasswordEnabled(room?.hasPassword ?? false)
     setPasswordInput('')
   }, [room?.hasPassword])
+
+  useEffect(() => {
+    setSuperPasswordEnabled(room?.hasSuperPassword ?? false)
+    // 仅在房间实际无管理密码时清空输入（true→false 真转变）。
+    // 当房主正在开启（本地 enabled=true、room 仍 false）时被打断，应保留其正在输入的值。
+    if (!room?.hasSuperPassword) setSuperPasswordInput('')
+  }, [room?.hasSuperPassword])
 
   const copyRoomLink = () => {
     const url = `${window.location.origin}/room/${room?.id}`
@@ -89,6 +106,32 @@ export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionPro
     }
     onUpdateSettings({ password: passwordInput.trim() })
     toast.success('密码已设置')
+  }
+
+  const handleSuperPasswordToggle = (checked: boolean) => {
+    if (!checked) {
+      // 关闭：若房间当前确有管理密码则清除；若仅本地"开启中"但尚未保存（room 无密码），只复位本地态
+      if (room?.hasSuperPassword) {
+        setSuperPasswordEnabled(false)
+        setSuperPasswordInput('')
+        onUpdateSettings({ superPassword: null })
+        toast.success('管理密码已移除')
+      } else {
+        setSuperPasswordEnabled(false)
+        setSuperPasswordInput('')
+      }
+    } else {
+      setSuperPasswordEnabled(true)
+    }
+  }
+
+  const handleSetSuperPassword = () => {
+    if (!superPasswordInput.trim()) {
+      toast.error('请输入管理密码')
+      return
+    }
+    onUpdateSettings({ superPassword: superPasswordInput.trim() })
+    toast.success('管理密码已设置')
   }
 
   const handleStartEditName = () => {
@@ -247,6 +290,36 @@ export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionPro
             </Badge>
           )}
         </SettingRow>
+
+        <SettingRow label="管理密码" description="成员凭此密码可获临时管理权限">
+          {room?.hasSuperPassword ? (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="gap-1">
+                <Lock className="h-3 w-3" /> 已设置
+              </Badge>
+              {roomSuperPassword && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <code
+                      className="cursor-pointer rounded bg-muted px-2 py-0.5 text-xs transition-colors hover:bg-muted/80"
+                      onClick={() => {
+                        navigator.clipboard.writeText(roomSuperPassword)
+                        toast.success('管理密码已复制')
+                      }}
+                    >
+                      {roomSuperPassword}
+                    </code>
+                  </TooltipTrigger>
+                  <TooltipContent>点击复制管理密码</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          ) : (
+            <Badge variant="outline" className="gap-1">
+              <LockOpen className="h-3 w-3" /> 未设置
+            </Badge>
+          )}
+        </SettingRow>
       </div>
 
       {isOwner && (
@@ -270,6 +343,28 @@ export function RoomSettingsSection({ onUpdateSettings }: RoomSettingsSectionPro
                 onKeyDown={(e) => e.key === 'Enter' && handleSetPassword()}
               />
               <Button size="sm" onClick={handleSetPassword}>
+                确认
+              </Button>
+            </div>
+          )}
+
+          <SettingRow label="管理密码" description="开启后，房间内任意成员输入此密码可获得临时管理权限">
+            <Switch checked={superPasswordEnabled} onCheckedChange={handleSuperPasswordToggle} />
+          </SettingRow>
+
+          {superPasswordEnabled && (
+            <div className="flex gap-2 pb-2">
+              <Input
+                type="password"
+                placeholder="输入管理密码..."
+                value={superPasswordInput}
+                onChange={(e) => setSuperPasswordInput(e.target.value)}
+                maxLength={LIMITS.SUPER_PASSWORD_MAX_LENGTH}
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && handleSetSuperPassword()}
+                autoFocus
+              />
+              <Button size="sm" onClick={handleSetSuperPassword}>
                 确认
               </Button>
             </div>

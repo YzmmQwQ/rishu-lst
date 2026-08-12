@@ -37,6 +37,7 @@ export function useRoom() {
     (settings: {
       name?: string
       password?: string | null
+      superPassword?: string | null
       audioQuality?: import('@music-together/shared').AudioQuality
     }) => {
       socket.emit(EVENTS.ROOM_SETTINGS, settings)
@@ -51,5 +52,12 @@ export function useRoom() {
     [socket],
   )
 
-  return { leaveRoom, updateSettings, setUserRole }
+  const grantAdminByPassword = useCallback(
+    (superPassword: string) => {
+      socket.emit(EVENTS.ROOM_GRANT_ADMIN_BY_PASSWORD, { superPassword })
+    },
+    [socket],
+  )
+
+  return { leaveRoom, updateSettings, setUserRole, grantAdminByPassword }
 }

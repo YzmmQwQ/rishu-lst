@@ -43,7 +43,7 @@ export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
   const { socket, isConnected } = useSocketContext()
-  const { leaveRoom, updateSettings, setUserRole } = useRoom()
+  const { leaveRoom, updateSettings, setUserRole, grantAdminByPassword } = useRoom()
 
   // 房间内页隐藏 E2B 装饰性滚动条（顶部进度条 + 右侧指示器）
   useEffect(() => {
@@ -373,6 +373,7 @@ export default function RoomPage() {
             }}
             onUpdateSettings={updateSettings}
             onSetUserRole={setUserRole}
+            onGrantAdminByPassword={grantAdminByPassword}
             initialTab={settingsInitialTab}
           />
         </div>

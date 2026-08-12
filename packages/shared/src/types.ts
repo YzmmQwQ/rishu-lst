@@ -5,6 +5,8 @@ export const ERROR_CODE = {
   INTERNAL: 'INTERNAL',
   ROOM_NOT_FOUND: 'ROOM_NOT_FOUND',
   WRONG_PASSWORD: 'WRONG_PASSWORD',
+  WRONG_SUPER_PASSWORD: 'WRONG_SUPER_PASSWORD',
+  SUPER_PASSWORD_NOT_SET: 'SUPER_PASSWORD_NOT_SET',
   JOIN_FAILED: 'JOIN_FAILED',
   NOT_IN_ROOM: 'NOT_IN_ROOM',
   NOT_OWNER: 'NOT_OWNER',
@@ -73,6 +75,10 @@ export interface RoomState {
   hasPassword: boolean
   /** 密码明文（仅 owner 可见；普通成员和临时管理员只收到 hasPassword） */
   password?: string | null
+  /** 房主是否设置了管理密码（全员可见） */
+  hasSuperPassword: boolean
+  /** 管理密码明文（仅 owner 可见；用于"管理员钥匙"提权校验，普通成员只收到 hasSuperPassword） */
+  superPassword?: string | null
   audioQuality: AudioQuality
   users: User[]
   queue: Track[]

@@ -17,10 +17,13 @@ interface RoomStore {
   currentUser: User | null
   /** 房间密码明文（从 ROOM_SETTINGS 事件接收） */
   roomPassword: string | null
+  /** 管理密码明文（仅 owner 从 ROOM_SETTINGS / ROOM_STATE 接收） */
+  roomSuperPassword: string | null
 
   setRoom: (room: RoomState | null) => void
   updateRoom: (partial: Partial<RoomState>) => void
   setRoomPassword: (password: string | null) => void
+  setRoomSuperPassword: (password: string | null) => void
   addUser: (user: User) => void
   removeUser: (userId: string) => void
   reset: () => void
@@ -30,6 +33,7 @@ export const useRoomStore = create<RoomStore>((set) => ({
   room: null,
   currentUser: null,
   roomPassword: null,
+  roomSuperPassword: null,
 
   setRoom: (room) => set({ room, currentUser: deriveCurrentUser(room) }),
 
@@ -45,6 +49,7 @@ export const useRoomStore = create<RoomStore>((set) => ({
     }),
 
   setRoomPassword: (password) => set({ roomPassword: password }),
+  setRoomSuperPassword: (password) => set({ roomSuperPassword: password }),
 
   addUser: (user) =>
     set((state) => {
@@ -73,5 +78,5 @@ export const useRoomStore = create<RoomStore>((set) => ({
       return { room }
     }),
 
-  reset: () => set({ room: null, currentUser: null, roomPassword: null }),
+  reset: () => set({ room: null, currentUser: null, roomPassword: null, roomSuperPassword: null }),
 }))
