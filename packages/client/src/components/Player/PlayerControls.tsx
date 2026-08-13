@@ -58,6 +58,7 @@ export const PlayerControls = memo(function PlayerControls({
   const [playCooldown, setPlayCooldown] = useState(false)
   // 拖拽 seek 时本地缓存的预览位置（秒），松手才提交
   const [seekTime, setSeekTime] = useState<number | null>(null)
+  const isSeeking = seekTime !== null
   // 点击右侧时长切换：已播放 / 剩余时长（AMLL 行为）
   const [showRemaining, setShowRemaining] = useState(false)
   const cooldownTimer = useRef<ReturnType<typeof setTimeout>>(null)
@@ -140,10 +141,12 @@ export const PlayerControls = memo(function PlayerControls({
             min={0}
             isPlaying={isPlaying}
             disabled={disabled || !canSeek}
-            onChange={(v) => {
-              if (duration > 0) {
-                setSeekTime(v)
-                setIsSeeking(true)
+            onSeeking={(seeking) => {
+              if (seeking) {
+                setSeekTime(currentTime)
+              } else if (seekTime !== null) {
+                onSeek(seekTime)
+                setSeekTime(null)
               }
             }}
             className="w-full"
