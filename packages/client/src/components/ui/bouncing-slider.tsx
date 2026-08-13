@@ -32,6 +32,10 @@ export interface BouncingSliderProps {
 	isPlaying?: boolean
 	/** 是否允许拖拽（无 seek 权限时禁用） */
 	disabled?: boolean
+	/** 拖拽开始/结束回调；结束时应把最终值提交给外部（seek） */
+	onSeeking?: (seeking: boolean) => void
+	/** 拖拽/点击过程中位置变化（秒）；用于外部本地预览 */
+	onValueChange?: (v: number) => void
 	onChange?: (v: number) => void
 }
 
@@ -48,6 +52,8 @@ export const BouncingSlider = memo(function BouncingSlider({
 	min = 0,
 	isPlaying = false,
 	disabled = false,
+	onSeeking,
+	onValueChange,
 	onChange,
 }: BouncingSliderProps) {
 	const containerRef = useRef<HTMLDivElement>(null)
@@ -104,6 +110,7 @@ export const BouncingSlider = memo(function BouncingSlider({
 		}
 
 		expand()
+		onSeeking?.(true)
 	}
 
 	const handlePan = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -126,6 +133,7 @@ export const BouncingSlider = memo(function BouncingSlider({
 
 		localTimeRef.current = newValue
 		progressMv.set(clampedPos)
+		onValueChange?.(newValue)
 	}
 
 	const handlePanEnd = () => {
@@ -141,6 +149,7 @@ export const BouncingSlider = memo(function BouncingSlider({
 
 		bounceXSpring.set(0)
 
+		onSeeking?.(false)
 		onChange?.(localTimeRef.current)
 	}
 
@@ -169,7 +178,11 @@ export const BouncingSlider = memo(function BouncingSlider({
 		localTimeRef.current = newValue
 		progressMv.set(relPos)
 
+		onValueChange?.(newValue)
+		onSeeking?.(true)
 		onChange?.(newValue)
+		// 单击 seek 立即结束拖拽态
+		onSeeking?.(false)
 	}
 
 	return (

@@ -11,6 +11,15 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!-- MiSans 全量可变字体（CDN，覆盖多变字重，不再用本地压缩子集）。
+         注意：misans 4.1.0 各档 font-weight 数值非标准（Regular=330, Medium=380,
+         Demibold=450, Semibold=520, Bold=630）。浏览器按就近匹配，故这里按代码实际
+         用到的 Tailwind 字重（normal≈Regular/normal、medium、semibold、bold）补齐：
+         Regular(330) + Demibold(450,≈medium/semibold 之间) + Semibold(520) + Bold(630)。 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Regular.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Demibold.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Semibold.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Bold.min.css" />
     <title>Let's listen together.</title>
     <script>
       // 首屏防闪：在 React 挂载前根据 localStorage / 系统偏好决定深浅，避免闪白。

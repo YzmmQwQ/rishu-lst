@@ -61,6 +61,12 @@ export const PlayerControls = memo(function PlayerControls({
   const isSeeking = seekTime !== null
   // 点击右侧时长切换：已播放 / 剩余时长（AMLL 行为）
   const [showRemaining, setShowRemaining] = useState(false)
+  const seekTimeRef = useRef<number | null>(null)
+  seekTimeRef.current = seekTime
+  const onSeekRef = useRef(onSeek)
+  onSeekRef.current = onSeek
+  const currentTimeRef = useRef(currentTime)
+  currentTimeRef.current = currentTime
   const cooldownTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const playCooldownTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -143,12 +149,16 @@ export const PlayerControls = memo(function PlayerControls({
             disabled={disabled || !canSeek}
             onSeeking={(seeking) => {
               if (seeking) {
-                setSeekTime(currentTime)
-              } else if (seekTime !== null) {
-                onSeek(seekTime)
-                setSeekTime(null)
+                setSeekTime(currentTimeRef.current)
+              } else {
+                const v = seekTimeRef.current
+                if (v !== null) {
+                  onSeekRef.current(v)
+                  setSeekTime(null)
+                }
               }
             }}
+            onValueChange={(v) => setSeekTime(v)}
             className="w-full"
           />
           <div className="flex w-full items-center justify-between">
