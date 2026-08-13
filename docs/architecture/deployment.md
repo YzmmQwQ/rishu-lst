@@ -50,6 +50,18 @@ Docker 容器 (:3001)
 
 ## 服务器部署命令
 
+### 前端 Cloudflare Pages + 后端 FRP
+
+前端使用 Cloudflare Pages 时，后端可以通过 FRP 暴露为独立的 HTTPS 域名。仓库根目录提供了 `docker-compose.yml`：
+
+```bash
+cp .env.example .env
+# 编辑 .env，至少设置 CLIENT_URL 和 IDENTITY_SECRET
+docker compose up -d
+```
+
+Compose 将容器绑定到服务器本机的 `127.0.0.1:3001`。FRP 客户端应将这个地址作为 `localIP` / `localPort`，例如 `127.0.0.1:3001`。Cloudflare Pages 构建时设置 `VITE_SERVER_URL` 为后端 HTTPS 地址（例如 `https://api.lst.rishu.cfd`）。
+
 ```bash
 # 启动应用容器
 docker run -d --name music-together --restart unless-stopped -p 3001:3001 ghcr.io/<owner>/music-together:latest
