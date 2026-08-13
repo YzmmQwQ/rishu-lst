@@ -1,5 +1,5 @@
 import { MediaButton } from '@/components/ui/media-button'
-import { Slider } from '@/components/ui/slider'
+import { BouncingSlider } from '@/components/ui/bouncing-slider'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ForwardIcon, PauseIcon, PlayIcon, PlaylistIcon, RepeatIcon, RewindIcon, ShuffleIcon } from '@/components/player-icons/icons'
 import { formatTime } from '@/lib/format'
@@ -56,8 +56,10 @@ export const PlayerControls = memo(function PlayerControls({
   const canVote = ability.can('vote', 'Player')
   const [skipCooldown, setSkipCooldown] = useState(false)
   const [playCooldown, setPlayCooldown] = useState(false)
-  const [isSeeking, setIsSeeking] = useState(false)
-  const [seekTime, setSeekTime] = useState(0)
+  // 拖拽 seek 时本地缓存的预览位置（秒），松手才提交
+  const [seekTime, setSeekTime] = useState<number | null>(null)
+  // 点击右侧时长切换：已播放 / 剩余时长（AMLL 行为）
+  const [showRemaining, setShowRemaining] = useState(false)
   const cooldownTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const playCooldownTimer = useRef<ReturnType<typeof setTimeout>>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -130,30 +132,37 @@ export const PlayerControls = memo(function PlayerControls({
   return (
     <div ref={wrapperRef} className="w-full">
       <div ref={innerRef} className="flex flex-col gap-6" style={{ width: DESIGN_WIDTH }}>
-        {/* 1. Progress bar */}
+        {/* 1. Progress bar — AMLL BouncingSlider */}
         <div className="flex w-full flex-col gap-1">
-          <Slider
-            value={[duration > 0 ? ((isSeeking ? seekTime : currentTime) / duration) * 100 : 0]}
-            max={100}
-            step={0.1}
+          <BouncingSlider
+            value={duration > 0 ? (isSeeking ? seekTime! : currentTime) : 0}
+            max={duration > 0 ? duration : 1}
+            min={0}
+            isPlaying={isPlaying}
             disabled={disabled || !canSeek}
-            onValueChange={(val) => {
+            onChange={(v) => {
               if (duration > 0) {
+                setSeekTime(v)
                 setIsSeeking(true)
-                setSeekTime((val[0] / 100) * duration)
               }
-            }}
-            onValueCommit={(val) => {
-              if (duration > 0) {
-                onSeek((val[0] / 100) * duration)
-              }
-              setIsSeeking(false)
             }}
             className="w-full"
           />
-          <div className="flex w-full justify-between">
-            <span className="text-xs text-white/50 tabular-nums">{formatTime(isSeeking ? seekTime : currentTime)}</span>
-            <span className="text-xs text-white/50 tabular-nums">{formatTime(duration)}</span>
+          <div className="flex w-full items-center justify-between">
+            <span
+              className="text-xs text-white/50 tabular-nums cursor-pointer select-none"
+              onClick={() => setShowRemaining((s) => !s)}
+            >
+              {formatTime(isSeeking ? seekTime! : currentTime)}
+            </span>
+            <span
+              className="text-xs text-white/50 tabular-nums cursor-pointer select-none"
+              onClick={() => setShowRemaining((s) => !s)}
+            >
+              {showRemaining
+                ? `-${formatTime(Math.max(0, duration - (isSeeking ? seekTime! : currentTime)))}`
+                : formatTime(duration)}
+            </span>
           </div>
         </div>
 
