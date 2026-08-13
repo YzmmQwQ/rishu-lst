@@ -81,6 +81,25 @@ npm run dev
 
 ## 部署
 
+### Docker Compose（前端 Pages + FRP 后端）
+
+适用于前端部署在 Cloudflare Pages、后端通过 FRP 暴露为独立 API 域名的场景。
+
+在服务器项目目录中创建 `.env`：
+
+```env
+CLIENT_URL=https://lst.rishu.cfd
+IDENTITY_SECRET=replace-with-a-long-random-secret
+```
+
+然后启动后端：
+
+```bash
+docker compose up -d
+```
+
+Compose 默认仅监听服务器本机的 `127.0.0.1:3001`，FRP 客户端应转发到该地址。前端构建环境变量设置为 `VITE_SERVER_URL=https://api.lst.rishu.cfd`。
+
 Docker 单镜像部署：
 
 ```bash

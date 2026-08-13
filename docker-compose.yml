@@ -1,0 +1,13 @@
+services:
+  music-together-api:
+    image: ghcr.io/yzmmqwq/rishu-lst:latest
+    container_name: music-together-api
+    restart: unless-stopped
+    ports:
+      # FRP runs on this host, so the API does not need a public LAN port.
+      - "127.0.0.1:3001:3001"
+    environment:
+      NODE_ENV: production
+      CLIENT_URL: ${CLIENT_URL}
+      IDENTITY_SECRET: ${IDENTITY_SECRET}
+      IDENTITY_COOKIE_SECURE: "true"

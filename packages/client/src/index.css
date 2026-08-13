@@ -213,7 +213,10 @@
      仅放行 rounded-full（语义上的正圆），方框圆角 rounded-* 仍为零。 */
   .rounded-full,
   [class*='rounded-full'],
-  .media-button {
+  .media-button,
+  /* AMLL 歌词间奏呼吸点（interludeDots）：原生为正圆，但被上方全局
+     border-radius:0 !important 压成方形，此处豁免还原为圆 */
+  .amll-container .FmKaba_interludeDots > span {
     border-radius: 9999px !important;
   }
   /* 方形 variant：列表行内操作按钮（上移/下移/置顶/移除等）hover 背景为方形。
