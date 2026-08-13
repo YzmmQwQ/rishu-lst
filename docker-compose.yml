@@ -11,3 +11,19 @@ services:
       CLIENT_URL: ${CLIENT_URL}
       IDENTITY_SECRET: ${IDENTITY_SECRET}
       IDENTITY_COOKIE_SECURE: "true"
+
+  # Optional: put the Linux frpc binary at ./frp/frpc and its config at
+  # ./frp/frpc.toml. On Linux, host networking lets frpc reach the API at
+  # 127.0.0.1:3001. Remove this service if frpc is managed by systemd.
+  frpc:
+    image: debian:bookworm-slim
+    container_name: music-together-frpc
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - music-together-api
+    volumes:
+      - ./frp/frpc:/usr/local/bin/frpc:ro
+      - ./frp/frpc.toml:/etc/frp/frpc.toml:ro
+    entrypoint: ["/usr/local/bin/frpc"]
+    command: ["-c", "/etc/frp/frpc.toml"]

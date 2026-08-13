@@ -100,6 +100,17 @@ docker compose up -d
 
 Compose 默认仅监听服务器本机的 `127.0.0.1:3001`，FRP 客户端应转发到该地址。前端构建环境变量设置为 `VITE_SERVER_URL=https://api.lst.rishu.cfd`。
 
+如果希望 Compose 同时启动 FRP：将 Linux `frpc` 二进制和配置文件放到项目目录的 `frp/frpc`、`frp/frpc.toml`，并确保二进制可执行：
+
+```bash
+mkdir -p frp
+chmod +x frp/frpc
+docker compose up -d
+docker compose logs -f frpc
+```
+
+`frpc.toml` 的本地目标应为 `127.0.0.1:3001`。此服务使用 Linux host network；如果设备不支持 host network，建议让 FRP 由宿主机 systemd 启动。
+
 Docker 单镜像部署：
 
 ```bash

@@ -62,6 +62,8 @@ docker compose up -d
 
 Compose 将容器绑定到服务器本机的 `127.0.0.1:3001`。FRP 客户端应将这个地址作为 `localIP` / `localPort`，例如 `127.0.0.1:3001`。Cloudflare Pages 构建时设置 `VITE_SERVER_URL` 为后端 HTTPS 地址（例如 `https://api.lst.rishu.cfd`）。
 
+若使用仓库 Compose 中的可选 `frpc` 服务，将 Linux `frpc` 二进制放在 `frp/frpc`、配置放在 `frp/frpc.toml`，并执行 `chmod +x frp/frpc`。该服务使用 host network，使 `127.0.0.1:3001` 指向宿主机 API；不支持 host network 的设备应改用宿主机 systemd 管理 FRP。
+
 ```bash
 # 启动应用容器
 docker run -d --name music-together --restart unless-stopped -p 3001:3001 ghcr.io/<owner>/music-together:latest

@@ -2,15 +2,8 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/* Fonts are loaded via <link> in index.html */
-/* MiSans 子集中文回退字体 */
-@font-face {
-  font-family: 'MiSans';
-  src: url('/fonts/MiSans-subset.woff2') format('woff2');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+/* Fonts are loaded via <link> in index.html (Google Fonts + MiSans CDN) */
+/* MiSans 字体现由 index.html 的 CDN <link> 提供（Regular/Semibold），不再用本地压缩子集 */
 
 @theme inline {
   --font-sans: 'IBM Plex Sans', 'MiSans', system-ui, -apple-system, sans-serif;
